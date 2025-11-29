@@ -24,7 +24,7 @@ A storm-based dash system powered by Celestial Tears for Minecraft 1.20+
 ## 📦 Installation
 
 1. Download the latest release
-2. Place `CelestialDash-1.2.0.jar` in your `/plugins/` folder
+2. Place `CelestialDash-1.1.2.jar` in your `/plugins/` folder
 3. Restart your server
 4. Configure in `/plugins/CelestialDash/config.yml`
 5. Reload with `/celestialdash reload`
