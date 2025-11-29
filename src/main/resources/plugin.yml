@@ -1,0 +1,37 @@
+name: CelestialDash
+main: com.minico.celestialdash.CelestialDash
+version: 1.1.2
+api-version: 1.20
+author: Minico
+description: A storm-based dash system powered by Celestial Tears with enhanced features.
+website:
+
+commands:
+  celestialdash:
+    description: CelestialDash admin commands
+    usage: |
+      /celestialdash give <player> <amount> - Give Celestial Tears to a player
+      /celestialdash reload - Reload the plugin configuration
+    aliases: [cdash, celestial]
+    permission: celestialdash.admin
+
+permissions:
+  celestialdash.*:
+    description: Grants all CelestialDash permissions
+    default: op
+    children:
+      celestialdash.use: true
+      celestialdash.receive: true
+      celestialdash.admin: true
+
+  celestialdash.use:
+    description: Allows using Celestial Tears to dash
+    default: true
+
+  celestialdash.receive:
+    description: Allows receiving Celestial Tears from storm drops
+    default: true
+
+  celestialdash.admin:
+    description: Allows using admin commands (give, reload)
+    default: op

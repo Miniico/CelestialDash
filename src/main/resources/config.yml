@@ -1,0 +1,130 @@
+# ============================================================
+#                    CelestialDash Configuration
+# ============================================================
+# Plugin by Minico
+# Supports color codes with & and hex colors with &#RRGGBB (1.16+)
+# ============================================================
+
+# ============================================================
+# CELESTIAL TEAR ITEM SETTINGS
+# ============================================================
+# Customize the appearance of the Celestial Tear item
+tear-name: "&bCelestial Tear"
+tear-lore:
+  - "&7A tear formed within a storm cloud,"
+  - "&7charged with celestial wind energy."
+
+# Custom model data for resource packs (0 = disabled)
+tear-custom-model-data: 0
+
+# ============================================================
+# DROP SYSTEM SETTINGS
+# ============================================================
+# Chance per second for a tear to drop near a player during a storm
+# Range: 0.0 (never) to 1.0 (always)
+drop-chance-per-second: 0.03
+
+# Cooldown between drops for each player (in seconds)
+drop-cooldown-seconds: 60
+
+# ============================================================
+# DASH MECHANICS
+# ============================================================
+# Cooldown between dashes per player (in seconds)
+dash-cooldown-seconds: 10
+
+# Dash horizontal strength (forward push)
+# Recommended range: 1.0 - 3.0
+dash-strength: 1.8
+
+# Dash vertical lift (upward boost)
+# Recommended range: 0.2 - 1.0
+dash-vertical-lift: 0.4
+
+# ============================================================
+# REGENERATION EFFECT
+# ============================================================
+# Regeneration effect applied after dashing
+regen-duration-seconds: 5
+regen-amplifier: 0   # 0 = Regeneration I, 1 = Regeneration II, etc.
+
+# ============================================================
+# DASH IMPACT PARTICLE EFFECT
+# ============================================================
+dash-particle-enabled: true
+dash-particle-type: "CLOUD"
+dash-particle-count: 40
+dash-particle-offset-x: 0.4
+dash-particle-offset-y: 0.5
+dash-particle-offset-z: 0.4
+dash-particle-speed: 0.02
+
+# ============================================================
+# DASH SOUND EFFECT
+# ============================================================
+dash-sound-enabled: true
+dash-sound-name: "ENTITY_PHANTOM_FLAP"
+dash-sound-volume: 1.2
+dash-sound-pitch: 0.6
+
+# ============================================================
+# WIND TRAIL EFFECT
+# ============================================================
+trail-enabled: true
+trail-particle-type: "CLOUD"
+trail-particle-count: 20
+trail-offset-x: 0.3
+trail-offset-y: 0.4
+trail-offset-z: 0.3
+trail-speed: 0.01
+trail-duration-ticks: 10
+trail-interval-ticks: 1
+
+# ============================================================
+# MESSAGES
+# ============================================================
+# Supports & color codes and &#RRGGBB hex colors (1.16+)
+# Available placeholders:
+#   %seconds% - Time remaining (for cooldown)
+#   %player% - Player name
+#   %amount% - Item amount
+# ============================================================
+messages:
+  # Plugin prefix (used in some messages)
+  prefix: "&8[&bCelestialDash&8]&r "
+
+  # Dash messages
+  cooldown: "&7Celestial Dash ready in &b%seconds%&7."
+  dash-used: "&bThe celestial wind pushes you forward!"
+  no-tears: "&cYou need at least one &bCelestial Tear &cto use Celestial Dash."
+  height-limit: "&cYou cannot dash at this height!"
+
+  # Drop messages
+  tear-received: "&b✦ &fA Celestial Tear falls from the stormy sky nearby..."
+
+  # Command messages
+  config-reloaded: "&aConfiguration reloaded successfully."
+  player-not-found: "&cPlayer '&e%player%&c' not found or is offline."
+  invalid-amount: "&cAmount must be a valid number greater than 0."
+  inventory-full: "&e⚠ &6%player%'s inventory was full. %amount% item(s) dropped on the ground."
+  tear-given: "&a✓ Gave &b%amount% Celestial Tear(s) &ato &b%player%&a."
+  tear-given-target: "&a✓ You received &b%amount% Celestial Tear(s)&a."
+
+  # Permission messages
+  no-permission: "&cYou don't have permission to do that."
+
+# ============================================================
+# EXAMPLE: Using Hex Colors (Minecraft 1.16+)
+# ============================================================
+# Uncomment these lines to use modern hex colors instead:
+#
+# tear-name: "&#87CEEBCelestial Tear"
+# tear-lore:
+#   - "&#B0C4DEA tear formed within a storm cloud,"
+#   - "&#B0C4DEcharged with celestial wind energy."
+#
+# messages:
+#   prefix: "&#00FFFF[CelestialDash] &r"
+#   dash-used: "&#87CEEB⚡ The celestial wind pushes you forward!"
+#   tear-received: "&#FFD700✦ A Celestial Tear falls nearby..."
+# ============================================================
