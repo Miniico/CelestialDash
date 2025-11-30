@@ -81,6 +81,59 @@ trail-duration-ticks: 10
 trail-interval-ticks: 1
 
 # ============================================================
+# COMBO DASH SYSTEM
+# ============================================================
+# Sequential dash system - dash twice within the time window for bonus
+combo-dash:
+  enabled: true
+
+  # Time window to perform second dash (in seconds)
+  combo-window-seconds: 2.0
+
+  # Power multipliers for combo dash
+  strength-multiplier: 1.5    # 150% of normal strength
+  lift-multiplier: 1.3         # 130% of normal lift
+
+  # Potion effects on combo (second dash)
+  slow-falling-duration-seconds: 5   # No fall damage for 5 seconds
+  speed-duration-seconds: 3          # Speed boost for 3 seconds
+  speed-amplifier: 0                 # 0 = Speed I, 1 = Speed II
+
+  # Combo particle effect
+  particle-type: "DOLPHIN"
+  particle-count: 60
+
+  # Combo sound effect
+  sound-name: "ENTITY_BLAZE_SHOOT"
+  sound-volume: 1.5
+  sound-pitch: 1.2
+
+# ============================================================
+# AIR DASH SYSTEM
+# ============================================================
+# Allows dashing while in the air (resets when landing)
+air-dash:
+  enabled: true
+
+  # Maximum air dashes before landing
+  max-air-dashes: 2
+
+  # Strength reduction for air dashes (0.9 = 90% power)
+  strength-reduction: 0.9
+
+  # Extra tear cost for air dashes
+  extra-cost-tears: 1   # Total cost: 1 (normal) + 1 (extra) = 2 tears
+
+  # Air dash particle effect
+  particle-type: "DRAGON_BREATH"
+  particle-count: 40
+
+  # Air dash sound effect
+  sound-name: "ENTITY_ENDER_DRAGON_FLAP"
+  sound-volume: 1.0
+  sound-pitch: 1.5
+
+# ============================================================
 # MESSAGES
 # ============================================================
 # Supports & color codes and &#RRGGBB hex colors (1.16+)
@@ -98,6 +151,15 @@ messages:
   dash-used: "&bThe celestial wind pushes you forward!"
   no-tears: "&cYou need at least one &bCelestial Tear &cto use Celestial Dash."
   height-limit: "&cYou cannot dash at this height!"
+
+  # Combo messages
+  combo-dash: "&e⚡⚡ Combo Dash! &7+50% Power"
+  fall-protection: "&a🛡 Fall Protection Active! &7(5s)"
+
+  # Air dash messages
+  air-dash: "&d✈ Air Dash!"
+  air-dash-limit: "&cYou've used all your air dashes! Land to reset."
+  not-enough-tears: "&cYou don't have enough Celestial Tears!"
 
   # Drop messages
   tear-received: "&b✦ &fA Celestial Tear falls from the stormy sky nearby..."
@@ -126,5 +188,6 @@ messages:
 # messages:
 #   prefix: "&#00FFFF[CelestialDash] &r"
 #   dash-used: "&#87CEEB⚡ The celestial wind pushes you forward!"
+#   combo-dash: "&#FFD700⚡⚡ Combo Dash! &#FFFF00+50% Power"
 #   tear-received: "&#FFD700✦ A Celestial Tear falls nearby..."
 # ============================================================

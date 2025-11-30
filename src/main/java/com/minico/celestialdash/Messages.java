@@ -28,6 +28,13 @@ public class Messages {
     private String tearGivenMessage;
     private String tearGivenTargetMessage;
 
+    // Combo messages
+    private String comboDashMessage;
+    private String fallProtectionMessage;
+    private String airDashMessage;
+    private String airDashLimitMessage;
+    private String notEnoughTearsMessage;
+
     public Messages(CelestialDash plugin) {
         this.plugin = plugin;
     }
@@ -101,6 +108,32 @@ public class Messages {
         tearGivenTargetMessage = color(cfg.getString(
                 "messages.tear-given-target",
                 "&a✓ You received &b%amount% Celestial Tear(s)&a."
+        ));
+
+        // Combo messages
+        comboDashMessage = color(cfg.getString(
+                "messages.combo-dash",
+                "&e⚡⚡ Combo Dash! &7+50% Power"
+        ));
+
+        fallProtectionMessage = color(cfg.getString(
+                "messages.fall-protection",
+                "&a🛡 Fall Protection Active! &7(5s)"
+        ));
+
+        airDashMessage = color(cfg.getString(
+                "messages.air-dash",
+                "&d✈ Air Dash!"
+        ));
+
+        airDashLimitMessage = color(cfg.getString(
+                "messages.air-dash-limit",
+                "&cYou've used all your air dashes! Land to reset."
+        ));
+
+        notEnoughTearsMessage = color(cfg.getString(
+                "messages.not-enough-tears",
+                "&cYou don't have enough Celestial Tears!"
         ));
     }
 
@@ -201,5 +234,30 @@ public class Messages {
     public String getTearGivenTargetMessage(int amount) {
         return tearGivenTargetMessage
                 .replace("%amount%", String.valueOf(amount));
+    }
+
+    public String getComboDashMessage(int level) {
+        if (level == 2) {
+            return comboDashMessage;
+        } else if (level >= 3) {
+            return color("&6⚡⚡⚡ TRIPLE DASH! &7+100% Power");
+        }
+        return dashUsedMessage;
+    }
+
+    public String getFallProtectionMessage() {
+        return fallProtectionMessage;
+    }
+
+    public String getAirDashMessage() {
+        return airDashMessage;
+    }
+
+    public String getAirDashLimitMessage() {
+        return airDashLimitMessage;
+    }
+
+    public String getNotEnoughTearsMessage() {
+        return notEnoughTearsMessage;
     }
 }

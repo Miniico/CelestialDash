@@ -113,6 +113,35 @@ public class CelestialDash extends JavaPlugin {
         config.trailSpeed = getValidDouble("trail-speed", 0.01, 0.0, 10.0);
         config.trailDurationTicks = getValidInt("trail-duration-ticks", 10, 0, 1200);
         config.trailIntervalTicks = getValidInt("trail-interval-ticks", 1, 1, 100);
+
+        // Combo system
+        config.comboEnabled = getConfig().getBoolean("combo-dash.enabled", true);
+        config.comboWindowSeconds = getConfig().getDouble("combo-dash.combo-window-seconds", 2.0);
+        config.comboStrengthMultiplier = getConfig().getDouble("combo-dash.strength-multiplier", 1.5);
+        config.comboLiftMultiplier = getConfig().getDouble("combo-dash.lift-multiplier", 1.3);
+        config.comboSlowFallingDuration = getConfig().getInt("combo-dash.slow-falling-duration-seconds", 5) * 20;
+        config.comboSpeedDuration = getConfig().getInt("combo-dash.speed-duration-seconds", 3) * 20;
+        config.comboSpeedAmplifier = getConfig().getInt("combo-dash.speed-amplifier", 0);
+
+        // Air dash
+        config.airDashEnabled = getConfig().getBoolean("air-dash.enabled", true);
+        config.maxAirDashes = getConfig().getInt("air-dash.max-air-dashes", 2);
+        config.airDashStrengthReduction = getConfig().getDouble("air-dash.strength-reduction", 0.9);
+        config.airDashExtraCost = getConfig().getInt("air-dash.extra-cost-tears", 1);
+
+        // Combo particles
+        config.comboParticle = getParticle("combo-dash.particle-type", Particle.DOLPHIN);
+        config.comboParticleCount = getValidInt("combo-dash.particle-count", 60, 0, 1000);
+        config.airDashParticle = getParticle("air-dash.particle-type", Particle.DRAGON_BREATH);
+        config.airDashParticleCount = getValidInt("air-dash.particle-count", 40, 0, 1000);
+
+        // Combo sounds
+        config.comboSound = getSound("combo-dash.sound-name", Sound.ENTITY_BLAZE_SHOOT);
+        config.comboSoundVolume = (float) getConfig().getDouble("combo-dash.sound-volume", 1.5);
+        config.comboSoundPitch = (float) getConfig().getDouble("combo-dash.sound-pitch", 1.2);
+        config.airDashSound = getSound("air-dash.sound-name", Sound.ENTITY_ENDER_DRAGON_FLAP);
+        config.airDashSoundVolume = (float) getConfig().getDouble("air-dash.sound-volume", 1.0);
+        config.airDashSoundPitch = (float) getConfig().getDouble("air-dash.sound-pitch", 1.5);
     }
 
     // Helper methods for validation
@@ -218,5 +247,34 @@ public class CelestialDash extends JavaPlugin {
         public double trailSpeed;
         public int trailDurationTicks;
         public int trailIntervalTicks;
+
+        // Combo system
+        public boolean comboEnabled;
+        public double comboWindowSeconds;
+        public double comboStrengthMultiplier;
+        public double comboLiftMultiplier;
+        public int comboSlowFallingDuration;
+        public int comboSpeedDuration;
+        public int comboSpeedAmplifier;
+
+        // Air dash system
+        public boolean airDashEnabled;
+        public int maxAirDashes;
+        public double airDashStrengthReduction;
+        public int airDashExtraCost;
+
+        // Combo particles
+        public Particle comboParticle;
+        public int comboParticleCount;
+        public Particle airDashParticle;
+        public int airDashParticleCount;
+
+        // Combo sounds
+        public Sound comboSound;
+        public float comboSoundVolume;
+        public float comboSoundPitch;
+        public Sound airDashSound;
+        public float airDashSoundVolume;
+        public float airDashSoundPitch;
     }
 }
