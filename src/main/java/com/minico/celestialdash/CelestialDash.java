@@ -72,7 +72,7 @@ public class CelestialDash extends JavaPlugin {
         messages.reload();
 
         dashHandler = new DashHandler(this, messages);
-        dropHandler = new DropHandler(this);
+        dropHandler = new DropHandler(this, messages); // ← FIXED
 
         Bukkit.getPluginManager().registerEvents(dashHandler, this);
 

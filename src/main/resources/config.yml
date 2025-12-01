@@ -59,3 +59,5 @@ messages:
   cooldown: "&7Celestial Dash ready in &b%seconds%s&7."
   no-tears: "&cYou need at least one &bCelestial Tear &cto use Celestial Dash."
   dash-used: "&bThe celestial wind pushes you forward!"
+  second-dash: "&bYou unleash a second celestial dash!"
+  tear-drop: "&bA celestial tear materializes from the storm..."   # NEW

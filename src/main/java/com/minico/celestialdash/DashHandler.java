@@ -49,13 +49,9 @@ public class DashHandler implements Listener {
         UUID uuid = player.getUniqueId();
 
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-        ItemStack offHand = player.getInventory().getItemInOffHand();
 
-        boolean mainHandHasItem = mainHand.getType() != Material.AIR;
-        boolean offHandHasTear = TearUtils.isCelestialTear(offHand);
-
-        // Must have any item in main hand OR a tear in off-hand
-        if (!mainHandHasItem && !offHandHasTear) {
+        // Must have a Celestial Tear in main hand
+        if (!TearUtils.isCelestialTear(mainHand)) {
             return;
         }
 
@@ -82,9 +78,11 @@ public class DashHandler implements Listener {
             long last = lastDash.getOrDefault(uuid, 0L);
             long cd = plugin.getDashCooldownMs();
             long diff = now - last;
+
             if (diff < cd) {
                 long remaining = (cd - diff) / 1000L;
                 if (remaining < 1) remaining = 1;
+
                 player.spigot().sendMessage(
                         ChatMessageType.ACTION_BAR,
                         TextComponent.fromLegacyText(messages.formatCooldown(remaining))
@@ -143,6 +141,7 @@ public class DashHandler implements Listener {
         if (now <= until) {
             event.setCancelled(true);
         }
+
         // Always clear stored immunity once it's checked
         fallImmunityUntil.remove(uuid);
     }
@@ -212,6 +211,7 @@ public class DashHandler implements Listener {
                 @Override
                 public void run() {
                     Player p = Bukkit.getPlayer(uuid);
+
                     if (p == null || !p.isOnline() || ticks >= plugin.getTrailDurationTicks()) {
                         cancel();
                         return;
@@ -235,7 +235,11 @@ public class DashHandler implements Listener {
             }.runTaskTimer(plugin, 0L, plugin.getTrailIntervalTicks());
         }
 
-        // Same message for both dashes (keeps messages.yml simple)
-        player.sendMessage(messages.getDashUsedMessage());
+        // Different messages for first and second dash
+        if (secondDash) {
+            player.sendMessage(messages.getSecondDashMessage());
+        } else {
+            player.sendMessage(messages.getDashUsedMessage());
+        }
     }
 }
