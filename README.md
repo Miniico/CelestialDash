@@ -98,7 +98,7 @@ See full config: [`config.yml`](src/main/resources/config.yml)
 
 ## 🛠️ Build From Source
 
-git clone https://github.com/Miinico/CelestialDash
+git clone [https://github.com/Miinico/CelestialDash](https://github.com/Miniico/CelestialDash)
 
 cd CelestialDash
 mvn clean package
