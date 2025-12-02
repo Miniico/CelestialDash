@@ -1,130 +1,133 @@
 # 🌟 CelestialDash
+A fast, storm-powered dash ability fueled by **Celestial Tears**.  
+Lightweight, polished and fully configurable — perfect for survival servers, RPG worlds and movement-based gameplay.
 
-A storm-based dash system powered by Celestial Tears for Minecraft 1.20+
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1+-green.svg)](https://www.minecraft.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)  
+[![Minecraft](https://img.shields.io/badge/Spigot/Paper-1.20%2B-green.svg)](https://papermc.io/)
 
 ---
 
 ## ✨ Features
 
-- 🌩️ **Storm Drops** - Celestial Tears fall during thunderstorms
-- ⚡ **Dash Mechanics** - Dash in any direction with customizable strength
-- 🎨 **Particle Effects** - Beautiful trail and impact particles
-- 🔊 **Custom Sounds** - Configurable sound effects
-- 💎 **Resource Pack Support** - Custom model data integration
-- 🛡️ **Permission System** - Full LuckPerms/Vault compatibility
-- 🌈 **Hex Colors** - Modern color support in messages (1.16+)
-- 🔒 **NBT Security** - PersistentDataContainer for item validation
+### 🌩 Storm-Forged Celestial Tears
+- Tears drop randomly around players **only during thunderstorms**
+- Fully configurable drop chance & cooldown  
+- Custom model data support  
+- Each tear is **automatically consumed** when dashing  
+- New storm-drop message (`messages.tear-drop`)  
+
+---
+
+## ⚡ Wind Dash Ability
+- Activated by **right-clicking with a Celestial Tear in the main hand**
+- **Double Dash System**:
+  - Perform a second dash within a configurable window  
+  - Second dash is stronger  
+  - Grants temporary **fall-damage immunity**
+- Adjustable dash strength, vertical lift, and cooldown  
+- Clean action-bar cooldown warnings  
+- 100% conflict-free with vanilla actions (eating, blocking, bow charging…)  
+
+---
+
+## 🌬 Visual & Audio Effects
+
+### 🌀 Wind Trail
+- Dynamic trail that follows the player during the dash  
+- Fully configurable:
+  - Particle type  
+  - Amount  
+  - Duration  
+  - Interval  
+  - Speed  
+
+### 💨 Dash Impact Burst
+- Particle explosion at dash activation  
+- Configurable offsets & amount  
+
+### 🔊 Dash Sound
+- Custom sound triggered on dash  
+- Adjustable volume & pitch  
+
+---
+
+## ❤️ Regeneration Boost
+After each dash:
+- Short **Regeneration** effect  
+- Duration & amplifier configurable in `config.yml`  
 
 ---
 
 ## 📦 Installation
+1. Download the latest release  
+2. Place the `.jar` into `/plugins/`  
+3. Start the server  
+4. Configure `config.yml`  
+5. Reload with: /celestialdash reload
 
-1. Download the latest release
-2. Place `CelestialDash-1.2.0.jar` in your `/plugins/` folder
-3. Restart your server
-4. Configure in `/plugins/CelestialDash/config.yml`
-5. Reload with `/celestialdash reload`
 
 ---
 
 ## 🎮 Commands
 
 | Command | Permission | Description |
-|---------|------------|-------------|
-| `/celestialdash give <player> <amount>` | `celestialdash.admin` | Give Celestial Tears to a player |
-| `/celestialdash reload` | `celestialdash.admin` | Reload plugin configuration |
-| `/cdash` | - | Alias for main command |
-| `/celestial` | - | Alias for main command |
+|--------|-------------|-------------|
+| `/celestialdash give <player> <amount>` | `celestialdash.admin` | Give Celestial Tears |
+| `/celestialdash reload` | `celestialdash.admin` | Reloads plugin configuration |
+
+Players do **not** need any permission to use the dash.
 
 ---
 
-## 🔑 Permissions
+## 🔧 Configuration
+Everything can be modified:
+- Drop mechanics  
+- Dash physics  
+- Double dash behavior  
+- Particles  
+- Trails  
+- Sounds  
+- Regeneration  
+- Custom model data  
+- Messages  
 
-| Permission | Default | Description |
-|------------|---------|-------------|
-| `celestialdash.*` | op | All permissions |
-| `celestialdash.use` | **true** | Use Celestial Tears to dash |
-| `celestialdash.receive` | **true** | Receive tears from storm drops |
-| `celestialdash.admin` | op | Access admin commands |
-
----
-
-## ⚙️ Configuration
-
-<details>
-<summary>Click to expand config.yml example</summary>
-```yaml
-# Drop system
-drop-chance-per-second: 0.03
-drop-cooldown-seconds: 60
-
-# Dash mechanics
-dash-cooldown-seconds: 10
-dash-strength: 1.8
-dash-vertical-lift: 0.4
-
-# Particle effects
-dash-particle-enabled: true
-dash-particle-type: "CLOUD"
-trail-enabled: true
-
-# And much more...
-```
-
-</details>
-
-See full config: [config.yml](src/main/resources/config.yml)
+See full config: [`config.yml`](src/main/resources/config.yml)
 
 ---
 
-## 🛠️ Building from Source
-```bash
-# Clone the repository
+## 🛠️ Build From Source
+
 git clone https://github.com/Miinico/CelestialDash.git
 
-# Navigate to directory
 cd CelestialDash
-
-# Build with Maven
 mvn clean package
 
-# Output: target/CelestialDash-1.2.0.jar
-```
+Output: `target/CelestialDash-x.x.x.jar`
 
 ---
 
 ## 📊 Technical Details
-
-- **Version:** 1.2.0
-- **Minecraft Version:** 1.20.1+
-- **API:** Spigot/Paper
-- **Java Version:** 17+
-- **Dependencies:** None (standalone)
+- **Minecraft:** 1.20+  
+- **API:** Spigot / Paper / Purpur  
+- **Java:** 17+  
+- **Dependencies:** None  
+- **Performance:** Zero TPS impact  
 
 ---
 
 ## 🤝 Support
-
-For issues, suggestions, or contributions, please use the [Issues](../../issues) tab.
+Found a bug or want a feature?  
+➡️ Open an Issue on GitHub.
 
 ---
 
 ## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License.  
+See [`LICENSE`](LICENSE).
 
 ---
 
 ## 👤 Author
-
 **Miinico**
 
----
-
-<div align="center">
-Made with ❤️ for the Minecraft community
-</div>
