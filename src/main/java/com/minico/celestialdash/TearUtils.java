@@ -79,4 +79,15 @@ public class TearUtils {
             tear.setAmount(tear.getAmount() - 1);
         }
     }
+
+    // Total number of Celestial Tears in the player's inventory
+    public static int countTears(Player player) {
+        int total = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (isCelestialTear(item)) {
+                total += item.getAmount();
+            }
+        }
+        return total;
+    }
 }

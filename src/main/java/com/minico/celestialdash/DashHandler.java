@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -40,6 +41,11 @@ public class DashHandler implements Listener {
 
     @EventHandler
     public void onPlayerUseTear(PlayerInteractEvent event) {
+        // Ignore off-hand to avoid double trigger with items in the off-hand
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
             return;
@@ -50,7 +56,7 @@ public class DashHandler implements Listener {
 
         ItemStack mainHand = player.getInventory().getItemInMainHand();
 
-        // Must have a Celestial Tear in main hand
+        // Dash only if the Celestial Tear is in the MAIN hand
         if (!TearUtils.isCelestialTear(mainHand)) {
             return;
         }
@@ -141,7 +147,6 @@ public class DashHandler implements Listener {
         if (now <= until) {
             event.setCancelled(true);
         }
-
         // Always clear stored immunity once it's checked
         fallImmunityUntil.remove(uuid);
     }
@@ -154,7 +159,7 @@ public class DashHandler implements Listener {
         double lift = plugin.getDashLift();
 
         if (secondDash) {
-            // Slight buff on second dash (tweak if you want)
+            // Slight buff on second dash
             strength *= 1.2;
             lift *= 1.1;
         }
@@ -211,7 +216,6 @@ public class DashHandler implements Listener {
                 @Override
                 public void run() {
                     Player p = Bukkit.getPlayer(uuid);
-
                     if (p == null || !p.isOnline() || ticks >= plugin.getTrailDurationTicks()) {
                         cancel();
                         return;
@@ -241,5 +245,29 @@ public class DashHandler implements Listener {
         } else {
             player.sendMessage(messages.getDashUsedMessage());
         }
+    }
+
+    // ===== Helper methods for PlaceholderAPI =====
+
+    public long getRemainingCooldownSeconds(Player player) {
+        UUID uuid = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        long last = lastDash.getOrDefault(uuid, 0L);
+        long cd = plugin.getDashCooldownMs();
+
+        long diff = now - last;
+        if (diff >= cd) {
+            return 0L;
+        }
+        long remainingMs = cd - diff;
+        long seconds = remainingMs / 1000L;
+        return Math.max(seconds, 1L);
+    }
+
+    public boolean isInDoubleDashWindow(Player player) {
+        UUID uuid = player.getUniqueId();
+        Long windowEnd = comboWindowEnd.get(uuid);
+        if (windowEnd == null) return false;
+        return System.currentTimeMillis() <= windowEnd;
     }
 }

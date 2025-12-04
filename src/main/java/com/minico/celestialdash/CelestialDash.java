@@ -72,7 +72,7 @@ public class CelestialDash extends JavaPlugin {
         messages.reload();
 
         dashHandler = new DashHandler(this, messages);
-        dropHandler = new DropHandler(this, messages); // ← FIXED
+        dropHandler = new DropHandler(this);
 
         Bukkit.getPluginManager().registerEvents(dashHandler, this);
 
@@ -81,6 +81,14 @@ public class CelestialDash extends JavaPlugin {
             cmd.setExecutor(new CelestialCommand(this, messages));
         } else {
             getLogger().severe("Command 'celestialdash' is not defined in plugin.yml!");
+        }
+
+        // PlaceholderAPI hook
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new CelestialPlaceholders(this).register();
+            getLogger().info("PlaceholderAPI detected - registered CelestialDash placeholders.");
+        } else {
+            getLogger().info("PlaceholderAPI not found - skipping placeholder registration.");
         }
 
         dropHandler.start();
@@ -166,6 +174,10 @@ public class CelestialDash extends JavaPlugin {
 
     public Messages getMessages() {
         return messages;
+    }
+
+    public DashHandler getDashHandler() {
+        return dashHandler;
     }
 
     public double getDropChance() {

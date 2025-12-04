@@ -13,14 +13,12 @@ import java.util.UUID;
 public class DropHandler {
 
     private final CelestialDash plugin;
-    private final Messages messages; // NEW
-
     private BukkitRunnable task;
+
     private final Map<UUID, Long> lastDrop = new HashMap<>();
 
-    public DropHandler(CelestialDash plugin, Messages messages) { // CHANGED CONSTRUCTOR
+    public DropHandler(CelestialDash plugin) {
         this.plugin = plugin;
-        this.messages = messages;
     }
 
     public void start() {
@@ -50,8 +48,10 @@ public class DropHandler {
                         world.dropItemNaturally(player.getLocation(), tear);
                         lastDrop.put(uuid, now);
 
-                        // Send drop message to the player
-                        player.sendMessage(messages.getTearDropMessage());
+                        // Notify only this player
+                        if (plugin.getMessages() != null) {
+                            player.sendMessage(plugin.getMessages().getTearDropMessage());
+                        }
                     }
                 }
             }
