@@ -1,8 +1,7 @@
 # CelestialDash
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)  
-[![Minecraft](https://img.shields.io/badge/Spigot/Paper-1.17%2B-green.svg)](https://papermc.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)  [![Minecraft](https://img.shields.io/badge/Spigot/Paper-1.17%2B-green.svg)](https://papermc.io/)
+
 
 CelestialDash is a lightweight Spigot/Paper/Purpur plugin that adds a storm-powered **Wind Dash** ability to Minecraft servers.
 
