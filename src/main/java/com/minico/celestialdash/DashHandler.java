@@ -4,14 +4,12 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -41,11 +39,6 @@ public class DashHandler implements Listener {
 
     @EventHandler
     public void onPlayerUseTear(PlayerInteractEvent event) {
-        // Ignore off-hand to avoid double trigger with items in the off-hand
-        if (event.getHand() != EquipmentSlot.HAND) {
-            return;
-        }
-
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
             return;
@@ -54,9 +47,8 @@ public class DashHandler implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
+        // Only allow dashing if the main-hand item IS a Celestial Tear
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-
-        // Dash only if the Celestial Tear is in the MAIN hand
         if (!TearUtils.isCelestialTear(mainHand)) {
             return;
         }
@@ -100,7 +92,11 @@ public class DashHandler implements Listener {
         // Find a tear in inventory
         int slot = TearUtils.findTearSlot(player);
         if (slot == -1) {
-            // No Celestial Tears → do nothing, no message
+            // No Celestial Tears → action bar message
+            player.spigot().sendMessage(
+                    ChatMessageType.ACTION_BAR,
+                    TextComponent.fromLegacyText(messages.getNoTearsMessage())
+            );
             return;
         }
 
@@ -159,7 +155,7 @@ public class DashHandler implements Listener {
         double lift = plugin.getDashLift();
 
         if (secondDash) {
-            // Slight buff on second dash
+            // Slight buff on second dash (tweak if needed)
             strength *= 1.2;
             lift *= 1.1;
         }
@@ -247,27 +243,27 @@ public class DashHandler implements Listener {
         }
     }
 
-    // ===== Helper methods for PlaceholderAPI =====
+    // ===== Helper methods for placeholders =====
 
     public long getRemainingCooldownSeconds(Player player) {
         UUID uuid = player.getUniqueId();
-        long now = System.currentTimeMillis();
         long last = lastDash.getOrDefault(uuid, 0L);
         long cd = plugin.getDashCooldownMs();
+        long now = System.currentTimeMillis();
 
         long diff = now - last;
         if (diff >= cd) {
             return 0L;
         }
-        long remainingMs = cd - diff;
-        long seconds = remainingMs / 1000L;
-        return Math.max(seconds, 1L);
+        return (cd - diff) / 1000L;
     }
 
     public boolean isInDoubleDashWindow(Player player) {
         UUID uuid = player.getUniqueId();
         Long windowEnd = comboWindowEnd.get(uuid);
-        if (windowEnd == null) return false;
+        if (windowEnd == null) {
+            return false;
+        }
         return System.currentTimeMillis() <= windowEnd;
     }
 }

@@ -10,14 +10,13 @@ public class Messages {
     private String noTearsMessage;
     private String dashUsedMessage;
     private String secondDashMessage;
-    private String tearDropMessage; // ← NEW FIELD
+    private String tearDropMessage;
 
     public Messages(CelestialDash plugin) {
         this.plugin = plugin;
     }
 
     public void reload() {
-
         cooldownTemplate = color(plugin.getConfig().getString(
                 "messages.cooldown",
                 "&7Celestial Dash ready in &b%seconds%s&7."
@@ -60,7 +59,7 @@ public class Messages {
         return secondDashMessage;
     }
 
-    public String getTearDropMessage() { // ← NEW GETTER
+    public String getTearDropMessage() {
         return tearDropMessage;
     }
 

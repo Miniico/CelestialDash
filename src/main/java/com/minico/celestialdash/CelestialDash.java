@@ -1,6 +1,5 @@
 package com.minico.celestialdash;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.command.PluginCommand;
@@ -74,7 +73,7 @@ public class CelestialDash extends JavaPlugin {
         dashHandler = new DashHandler(this, messages);
         dropHandler = new DropHandler(this);
 
-        Bukkit.getPluginManager().registerEvents(dashHandler, this);
+        getServer().getPluginManager().registerEvents(dashHandler, this);
 
         PluginCommand cmd = getCommand("celestialdash");
         if (cmd != null) {
@@ -83,12 +82,12 @@ public class CelestialDash extends JavaPlugin {
             getLogger().severe("Command 'celestialdash' is not defined in plugin.yml!");
         }
 
-        // PlaceholderAPI hook
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+        // PlaceholderAPI support (optional)
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new CelestialPlaceholders(this).register();
-            getLogger().info("PlaceholderAPI detected - registered CelestialDash placeholders.");
+            getLogger().info("PlaceholderAPI detected — Celestial placeholders enabled.");
         } else {
-            getLogger().info("PlaceholderAPI not found - skipping placeholder registration.");
+            getLogger().info("PlaceholderAPI not found — placeholders disabled.");
         }
 
         dropHandler.start();
@@ -298,9 +297,5 @@ public class CelestialDash extends JavaPlugin {
 
     public int getDoubleDashFallImmunityTicks() {
         return doubleDashFallImmunityTicks;
-    }
-
-    public int getTearCustomModelData() {
-        return tearCustomModelData;
     }
 }

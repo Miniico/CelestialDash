@@ -4,64 +4,98 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class TearUtils {
 
-    private static final String TEAR_NAME = ChatColor.AQUA + "Celestial Tear";
-
-    // CustomModelData from config (0 = disabled)
     private static int customModelData = 0;
 
-    public static void setCustomModelData(int cmd) {
-        customModelData = cmd;
+    /**
+     * Sets the CustomModelData used for Celestial Tears.
+     * Called from CelestialDash.loadSettings().
+     */
+    public static void setCustomModelData(int data) {
+        customModelData = data;
     }
 
-    public static String getTearName() {
-        return TEAR_NAME;
-    }
-
+    /**
+     * Creates a single Celestial Tear item.
+     */
     public static ItemStack createCelestialTear() {
-        ItemStack item = new ItemStack(Material.GHAST_TEAR);
+        ItemStack item = new ItemStack(Material.GHAST_TEAR, 1);
         ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(TEAR_NAME);
-            meta.setLore(Arrays.asList(
-                    ChatColor.GRAY + "A tear formed within a storm cloud,",
-                    ChatColor.GRAY + "charged with celestial wind energy."
-            ));
-
-            if (customModelData > 0) {
-                meta.setCustomModelData(customModelData);
-            }
-
-            item.setItemMeta(meta);
+        if (meta == null) {
+            return item;
         }
+
+        meta.setDisplayName(ChatColor.AQUA + "Celestial Tear");
+        meta.setLore(List.of(
+                ChatColor.GRAY + "Forged by storm winds",
+                ChatColor.GRAY + "A source of celestial mobility"
+        ));
+
+        if (customModelData > 0) {
+            meta.setCustomModelData(customModelData);
+        }
+
+        item.setItemMeta(meta);
         return item;
     }
 
+    /**
+     * Creates multiple Celestial Tears with the given amount.
+     */
+    public static ItemStack createCelestialTear(int amount) {
+        ItemStack item = createCelestialTear();
+        item.setAmount(amount);
+        return item;
+    }
+
+    /**
+     * Returns true if the given item is a Celestial Tear.
+     */
     public static boolean isCelestialTear(ItemStack item) {
-        if (item == null) return false;
-        if (item.getType() != Material.GHAST_TEAR) return false;
+        if (item == null || item.getType() != Material.GHAST_TEAR) {
+            return false;
+        }
+        if (!item.hasItemMeta()) {
+            return false;
+        }
 
         ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) return false;
+        if (meta == null || !meta.hasDisplayName()) {
+            return false;
+        }
 
-        if (!TEAR_NAME.equals(meta.getDisplayName())) return false;
+        // Basic name check
+        String stripped = ChatColor.stripColor(meta.getDisplayName());
+        if (!"Celestial Tear".equalsIgnoreCase(stripped)) {
+            return false;
+        }
 
+        // Optional CustomModelData check
         if (customModelData > 0) {
-            if (!meta.hasCustomModelData()) return false;
+            if (!meta.hasCustomModelData()) {
+                return false;
+            }
             return meta.getCustomModelData() == customModelData;
         }
 
         return true;
     }
 
+    /**
+     * Finds the first inventory slot containing a Celestial Tear.
+     *
+     * @return slot index or -1 if none found
+     */
     public static int findTearSlot(Player player) {
-        for (int i = 0; i < player.getInventory().getSize(); i++) {
-            ItemStack item = player.getInventory().getItem(i);
+        PlayerInventory inv = player.getInventory();
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack item = inv.getItem(i);
             if (isCelestialTear(item)) {
                 return i;
             }
@@ -69,25 +103,26 @@ public class TearUtils {
         return -1;
     }
 
+    /**
+     * Consumes one Celestial Tear from the given slot, if valid.
+     */
     public static void consumeTear(Player player, int slot) {
-        ItemStack tear = player.getInventory().getItem(slot);
-        if (tear == null) return;
+        PlayerInventory inv = player.getInventory();
+        if (slot < 0 || slot >= inv.getSize()) {
+            return;
+        }
 
-        if (tear.getAmount() <= 1) {
-            player.getInventory().setItem(slot, null);
+        ItemStack item = inv.getItem(slot);
+        if (!isCelestialTear(item)) {
+            return;
+        }
+
+        int newAmount = item.getAmount() - 1;
+        if (newAmount <= 0) {
+            inv.setItem(slot, null);
         } else {
-            tear.setAmount(tear.getAmount() - 1);
+            item.setAmount(newAmount);
+            inv.setItem(slot, item);
         }
-    }
-
-    // Total number of Celestial Tears in the player's inventory
-    public static int countTears(Player player) {
-        int total = 0;
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (isCelestialTear(item)) {
-                total += item.getAmount();
-            }
-        }
-        return total;
     }
 }
