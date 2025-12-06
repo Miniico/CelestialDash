@@ -1,121 +1,95 @@
-# CelestialDash
+# ⚡ CelestialDash  
+Storm-powered mobility using **Celestial Tears** — fast, configurable & designed for PvP, survival progression, and skill-based movement.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)  [![Minecraft](https://img.shields.io/badge/Spigot/Paper-1.17%2B-green.svg)](https://papermc.io/)
-
-
-CelestialDash is a lightweight Spigot/Paper/Purpur plugin that adds a storm-powered **Wind Dash** ability to Minecraft servers.
-
-During thunderstorms, rare **Celestial Tears** drop around players.  
-Holding a tear in your main hand lets you perform a configurable dash — and even a **second, stronger dash** within a short time window — with particles, sound, regeneration and temporary fall-damage immunity.
-
-Perfect for survival, RPG servers, movement-based gameplay and cosmetic abilities.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Minecraft](https://img.shields.io/badge/Spigot%2FPaper-1.17%2B-green.svg)](https://papermc.io/)
 
 ---
 
-## ✨ Features
+## 🌩 What does it do?
 
-- **Storm-Forged Celestial Tears**
-  - Tears drop randomly around players during thunderstorms.
-  - Per-player drop cooldown and drop chance are fully configurable.
-  - Custom name, lore and optional CustomModelData support.
-  - A configurable message is shown when a tear drops.
+During thunderstorms, rare **Celestial Tears** fall from the sky.  
+Players can consume them to perform a **Wind Dash**, launching themselves forward with power, speed, particles & sound.
 
-- **Wind Dash**
-  - Activate by right-clicking while holding a Celestial Tear in your **main hand**.
-  - Dash direction follows the player's look vector.
-  - Each dash consumes exactly **one** tear from the inventory.
-  - Per-player dash cooldown to prevent spam.
-  - Configurable dash strength and vertical lift.
-  - Optional regeneration effect applied after dashing.
-
-- **Double Dash System**
-  - A second dash can be triggered within a configurable time window.
-  - The second dash has increased power.
-  - Grants temporary fall-damage immunity after the second dash.
-  - Separate message for the second dash.
-
-- **Visual & Audio Effects**
-  - Configurable impact particles on dash activation.
-  - Optional wind trail particle effect during the dash.
-  - Configurable dash sound (type, volume, pitch).
-  - All particle and sound settings are configurable.
-
-- **Messages & Customization**
-  - All messages are configurable in `config.yml`:
-    - `messages.cooldown`
-    - `messages.no-tears`
-    - `messages.dash-used`
-    - `messages.second-dash`
-    - `messages.tear-drop`
-  - Tear CustomModelData can be set from `config.yml`.
-
-- **Lightweight & Optimized**
-  - Designed to be very lightweight and efficient.
-  - Suitable for both small and large servers.
+Ideal for:
+- PvP evasive movement
+- Mobility-focused survival
+- Storm-themed abilities
+- Parkour servers
+- RPG progression unlocks
 
 ---
 
-## ✅ Compatibility
+## ⭐ Key Features
 
-- Spigot, Paper, Purpur
-- Tested on Minecraft versions **1.17 – 1.21**
-- No client mods or resource packs required (CustomModelData is optional).
+| Feature | Description |
+|--------|-------------|
+| Storm Tear Drops | Naturally generated in storms, configurable chance + cooldown |
+| Wind Dash | Consume one tear to dash toward your facing direction |
+| Second Dash (Combo) | Double dash within time window + fall-damage immunity |
+| Effects | Trail, particles, sound — fully configurable |
+| Regen Buff | Heal after dashing (duration + amplifier configurable) |
+| Lightweight | Zero dependencies, optimized, tiny performance footprint |
+| Open Source | MIT-licensed — modify & extend freely |
+
+---
+
+## 🎮 How to Use
+
+1. Have at least **one Celestial Tear** in your inventory  
+2. Hold item in main hand  
+3. Right-click → dash  
+4. Dash again within combo window for **Double Dash**
+
+Consumes **1 Tear per dash**.
 
 ---
 
 ## 🔧 Commands
 
-- `/celestialdash give <player> <amount>`  
-  Gives Celestial Tears to a player.
+| Command | Description |
+|--------|-------------|
+| `/celestialdash give <player> <amount>` | Gives Celestial Tears |
+| `/celestialdash reload`                | Reloads config.yml |
 
-- `/celestialdash reload`  
-  Reloads the plugin configuration and messages.
-
----
-
-## 🔑 Permissions
-
-- `celestialdash.admin`  
-  Required for `/celestialdash give` and `/celestialdash reload`.
-
-Players do **not** need any permission to use the dash as long as they can obtain Celestial Tears.
+**Permission:** `celestialdash.admin`  
+Players require **no permissions** to dash.
 
 ---
 
-## ⚙ Configuration
+## 🧱 Compatibility
 
-A sample `config.yml` is generated on first run. It includes:
-
-- Storm drop settings (chance, cooldown).
-- Dash settings (cooldown, strength, vertical lift).
-- Double dash settings (time window, fall-damage immunity).
-- Particle and sound settings.
-- Regeneration settings.
-- Message entries:
-  - `messages.cooldown`
-  - `messages.no-tears`
-  - `messages.dash-used`
-  - `messages.second-dash`
-  - `messages.tear-drop`
+✔ Spigot  
+✔ Paper & Purpur  
+✔ 1.17 → 1.21+  
+✔ Java 17+  
+✔ No dependencies  
+✔ No resource packs required  
 
 ---
 
-## 📦 Installation
+## Ideal Usage Scenarios
 
-1. Download the latest release `.jar`.
-2. Place it in your server’s `plugins` folder.
-3. Start or restart the server.
-4. Edit `config.yml` if needed.
-5. Use `/celestialdash reload` to apply changes without restarting.
+- PvP movement & outplays  
+- Parkour mechanics  
+- Storm-related events  
+- RPG progression & loot tables  
+- Survival mobility enhancement  
+- Cosmetic ability unlocks with rarity  
 
 ---
 
-## 🧑‍💻 Open Source
+## 📝 License  
 
-CelestialDash is open source and licensed under the **MIT License**.
+This project uses the **MIT License**, meaning:
 
-- Modrinth: (link to Modrinth page)
-- Spigot: (link to Spigot resource)
-- Source code: (link to this repository)
+✔ You can fork it  
+✔ You can edit it  
+✔ You can publish improvements  
+✔ You can contribute freely  
 
-Contributions, feedback and pull requests are welcome.
+---
+
+If you enjoy the project, consider sharing or contributing! ⚡  
+Your server just got a lot faster.
