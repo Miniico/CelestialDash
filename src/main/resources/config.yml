@@ -6,6 +6,12 @@ drop-chance-per-second: 0.03
 # Cooldown between drops for each player (in seconds)
 drop-cooldown-seconds: 60
 
+# Worlds where Celestial Tears will NOT drop during storms
+drop-blacklist-worlds:
+  - "world_nether"
+  - "world_the_end"
+  # Add any other world names here
+
 # Dash cooldown per player (in seconds)
 dash-cooldown-seconds: 10
 
@@ -60,4 +66,4 @@ messages:
   no-tears: "&cYou need at least one &bCelestial Tear &cto use Celestial Dash."
   dash-used: "&bThe celestial wind pushes you forward!"
   second-dash: "&bYou unleash a second celestial dash!"
-  tear-drop: "&bA celestial tear materializes from the storm..."   # NEW
+  tear-drop: "&bA celestial tear materializes from the storm..."

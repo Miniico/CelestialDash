@@ -21,10 +21,6 @@ public class DropHandler {
         this.plugin = plugin;
     }
 
-    /**
-     * Starts the repeating task that spawns Celestial Tears
-     * around players during thunderstorms.
-     */
     public void start() {
         if (task != null) {
             task.cancel();
@@ -33,10 +29,15 @@ public class DropHandler {
         task = new BukkitRunnable() {
             @Override
             public void run() {
-                // Iterate over all online players and spawn tears
-                // around them if the world is currently in a storm.
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     World world = player.getWorld();
+
+                    // Skip blacklisted worlds
+                    if (plugin.isWorldBlacklistedForDrops(world.getName())) {
+                        continue;
+                    }
+
+                    // Only drop during storms in allowed worlds
                     if (!world.hasStorm()) {
                         continue;
                     }
@@ -45,22 +46,17 @@ public class DropHandler {
                     long now = System.currentTimeMillis();
                     long last = lastDrop.getOrDefault(uuid, 0L);
 
-                    // Per-player cooldown between storm drops
                     if (now - last < plugin.getDropCooldownMs()) {
                         continue;
                     }
 
-                    // Random chance per second for a tear to drop
                     if (Math.random() < plugin.getDropChance()) {
                         ItemStack tear = TearUtils.createCelestialTear();
                         world.dropItemNaturally(player.getLocation(), tear);
-
-                        // Optional message when a tear drops
-                        if (plugin.getMessages() != null) {
-                            player.sendMessage(plugin.getMessages().getTearDropMessage());
-                        }
-
                         lastDrop.put(uuid, now);
+
+                        // Notify only the player who received the tear
+                        plugin.getMessages().sendTearDropMessage(player);
                     }
                 }
             }

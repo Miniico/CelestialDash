@@ -1,6 +1,7 @@
 package com.minico.celestialdash;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 public class Messages {
 
@@ -59,8 +60,11 @@ public class Messages {
         return secondDashMessage;
     }
 
-    public String getTearDropMessage() {
-        return tearDropMessage;
+    public void sendTearDropMessage(Player player) {
+        if (tearDropMessage == null || tearDropMessage.isEmpty()) {
+            return;
+        }
+        player.sendMessage(tearDropMessage);
     }
 
     private String color(String input) {

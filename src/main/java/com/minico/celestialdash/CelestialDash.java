@@ -1,9 +1,14 @@
 package com.minico.celestialdash;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CelestialDash extends JavaPlugin {
 
@@ -54,6 +59,9 @@ public class CelestialDash extends JavaPlugin {
     // Tear CustomModelData
     private int tearCustomModelData = 0;
 
+    // World blacklist for drops
+    private final Set<String> dropBlacklistWorlds = new HashSet<>();
+
     // Services
     private Messages messages;
     private DashHandler dashHandler;
@@ -73,7 +81,7 @@ public class CelestialDash extends JavaPlugin {
         dashHandler = new DashHandler(this, messages);
         dropHandler = new DropHandler(this);
 
-        getServer().getPluginManager().registerEvents(dashHandler, this);
+        Bukkit.getPluginManager().registerEvents(dashHandler, this);
 
         PluginCommand cmd = getCommand("celestialdash");
         if (cmd != null) {
@@ -82,12 +90,10 @@ public class CelestialDash extends JavaPlugin {
             getLogger().severe("Command 'celestialdash' is not defined in plugin.yml!");
         }
 
-        // PlaceholderAPI support (optional)
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+        // PlaceholderAPI hook
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new CelestialPlaceholders(this).register();
-            getLogger().info("PlaceholderAPI detected — Celestial placeholders enabled.");
-        } else {
-            getLogger().info("PlaceholderAPI not found — placeholders disabled.");
+            getLogger().info("PlaceholderAPI hook enabled.");
         }
 
         dropHandler.start();
@@ -167,6 +173,15 @@ public class CelestialDash extends JavaPlugin {
 
         // Tear CustomModelData
         tearCustomModelData = getConfig().getInt("tear-custom-model-data", tearCustomModelData);
+
+        // Drop blacklist worlds
+        List<String> blacklist = getConfig().getStringList("drop-blacklist-worlds");
+        dropBlacklistWorlds.clear();
+        for (String name : blacklist) {
+            if (name != null && !name.isEmpty()) {
+                dropBlacklistWorlds.add(name.toLowerCase());
+            }
+        }
     }
 
     // Getters used by other classes
@@ -297,5 +312,14 @@ public class CelestialDash extends JavaPlugin {
 
     public int getDoubleDashFallImmunityTicks() {
         return doubleDashFallImmunityTicks;
+    }
+
+    public int getTearCustomModelData() {
+        return tearCustomModelData;
+    }
+
+    public boolean isWorldBlacklistedForDrops(String worldName) {
+        if (worldName == null) return false;
+        return dropBlacklistWorlds.contains(worldName.toLowerCase());
     }
 }
