@@ -2,10 +2,14 @@ package com.minico.celestialdash;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 
@@ -26,14 +30,16 @@ public class TearUtils {
      * 0 means "disabled": no CustomModelData check will be applied.
      */
     private static int customModelData = 0;
+    private static NamespacedKey celestialTearKey;
 
     /**
-     * Sets the CustomModelData used for Celestial Tears.
-     * Called from {@link CelestialDash#loadSettings()}.
+     * Initializes the item marker and CustomModelData used for Celestial Tears.
+     * Called after the plugin settings are loaded and after a configuration reload.
      *
      * @param data CustomModelData value (0 disables the check)
      */
-    public static void setCustomModelData(int data) {
+    public static void initialize(JavaPlugin plugin, int data) {
+        celestialTearKey = new NamespacedKey(plugin, "celestial_tear");
         customModelData = data;
     }
 
@@ -62,6 +68,12 @@ public class TearUtils {
             meta.setCustomModelData(customModelData);
         }
 
+        meta.getPersistentDataContainer().set(
+                celestialTearKey,
+                PersistentDataType.BYTE,
+                (byte) 1
+        );
+
         item.setItemMeta(meta);
         return item;
     }
@@ -85,7 +97,7 @@ public class TearUtils {
      *
      * Conditions:
      *  - Material must be GHAST_TEAR
-     *  - Name must match "Celestial Tear" (color-stripped, case-insensitive)
+     *  - Must contain this plugin's PersistentDataContainer marker
      *  - If CustomModelData is enabled (>0), item must have the same value
      *
      * @param item ItemStack to inspect
@@ -100,13 +112,13 @@ public class TearUtils {
         }
 
         ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) {
+        if (meta == null || celestialTearKey == null) {
             return false;
         }
 
-        // Compare stripped display name to avoid color-code issues.
-        String stripped = ChatColor.stripColor(meta.getDisplayName());
-        if (!"Celestial Tear".equalsIgnoreCase(stripped)) {
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        Byte marker = data.get(celestialTearKey, PersistentDataType.BYTE);
+        if (marker == null || marker != (byte) 1) {
             return false;
         }
 
@@ -118,7 +130,7 @@ public class TearUtils {
             return meta.getCustomModelData() == customModelData;
         }
 
-        // No CustomModelData requirement -> name + material is enough.
+        // No CustomModelData requirement -> the persistent marker is enough.
         return true;
     }
 

@@ -1,0 +1,28 @@
+package com.minico.celestialdash;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ConfigValueValidatorTest {
+
+    @Test
+    void clampsIntegersBelowAndAboveTheAllowedRange() {
+        assertEquals(0, ConfigValueValidator.clamp(-1, 0, 500));
+        assertEquals(500, ConfigValueValidator.clamp(900, 0, 500));
+        assertEquals(20, ConfigValueValidator.clamp(20, 0, 500));
+    }
+
+    @Test
+    void clampsLongCooldownValues() {
+        assertEquals(0L, ConfigValueValidator.clamp(-1L, 0L, 86_400L));
+        assertEquals(86_400L, ConfigValueValidator.clamp(100_000L, 0L, 86_400L));
+    }
+
+    @Test
+    void clampsDecimalValues() {
+        assertEquals(0.0, ConfigValueValidator.clamp(-0.5, 0.0, 1.0));
+        assertEquals(1.0, ConfigValueValidator.clamp(1.2, 0.0, 1.0));
+        assertEquals(0.3, ConfigValueValidator.clamp(0.3, 0.0, 1.0));
+    }
+}

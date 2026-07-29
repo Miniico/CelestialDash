@@ -10,10 +10,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
@@ -31,14 +34,25 @@ public class DashHandler implements Listener {
     private final Map<UUID, Long> comboWindowEnd = new HashMap<>();
     // Fall-damage immunity after second dash
     private final Map<UUID, Long> fallImmunityUntil = new HashMap<>();
+    private final BukkitTask stateCleanupTask;
 
     public DashHandler(CelestialDash plugin, Messages messages) {
         this.plugin = plugin;
         this.messages = messages;
+        this.stateCleanupTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                cleanupExpiredState();
+            }
+        }.runTaskTimer(plugin, 20L, 20L);
     }
 
     @EventHandler
     public void onPlayerUseTear(PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
             return;
@@ -50,6 +64,14 @@ public class DashHandler implements Listener {
         // Only allow dashing if the main-hand item IS a Celestial Tear
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         if (!TearUtils.isCelestialTear(mainHand)) {
+            return;
+        }
+
+        if (!player.hasPermission("celestialdash.use")) {
+            player.spigot().sendMessage(
+                    ChatMessageType.ACTION_BAR,
+                    TextComponent.fromLegacyText(messages.getNoUsePermissionMessage())
+            );
             return;
         }
 
@@ -145,6 +167,30 @@ public class DashHandler implements Listener {
         }
         // Always clear stored immunity once it's checked
         fallImmunityUntil.remove(uuid);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        // Keep the normal dash cooldown across reconnects.
+        comboWindowEnd.remove(uuid);
+        fallImmunityUntil.remove(uuid);
+    }
+
+    public void stop() {
+        stateCleanupTask.cancel();
+        lastDash.clear();
+        comboWindowEnd.clear();
+        fallImmunityUntil.clear();
+    }
+
+    private void cleanupExpiredState() {
+        long now = System.currentTimeMillis();
+        long cooldown = plugin.getDashCooldownMs();
+
+        lastDash.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
+        comboWindowEnd.entrySet().removeIf(entry -> now > entry.getValue());
+        fallImmunityUntil.entrySet().removeIf(entry -> now > entry.getValue());
     }
 
     private void performDash(Player player, boolean secondDash) {
@@ -248,14 +294,15 @@ public class DashHandler implements Listener {
     public long getRemainingCooldownSeconds(Player player) {
         UUID uuid = player.getUniqueId();
         long last = lastDash.getOrDefault(uuid, 0L);
-        long cd = plugin.getDashCooldownMs();
-        long now = System.currentTimeMillis();
+        return calculateRemainingCooldownSeconds(last, System.currentTimeMillis(), plugin.getDashCooldownMs());
+    }
 
-        long diff = now - last;
-        if (diff >= cd) {
+    static long calculateRemainingCooldownSeconds(long lastDashMs, long nowMs, long cooldownMs) {
+        long elapsed = nowMs - lastDashMs;
+        if (cooldownMs <= 0 || elapsed >= cooldownMs) {
             return 0L;
         }
-        return (cd - diff) / 1000L;
+        return (long) Math.ceil((cooldownMs - elapsed) / 1000.0);
     }
 
     public boolean isInDoubleDashWindow(Player player) {
@@ -264,6 +311,10 @@ public class DashHandler implements Listener {
         if (windowEnd == null) {
             return false;
         }
-        return System.currentTimeMillis() <= windowEnd;
+        if (System.currentTimeMillis() <= windowEnd) {
+            return true;
+        }
+        comboWindowEnd.remove(uuid);
+        return false;
     }
 }

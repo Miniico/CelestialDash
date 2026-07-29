@@ -1,10 +1,11 @@
 name: CelestialDash
 main: com.minico.celestialdash.CelestialDash
-version: 1.1.4
+version: 1.1.5
 api-version: 1.20
 author: Minico
 description: A storm-based dash system powered by Celestial Tears with enhanced features.
 website:
+softdepend: [PlaceholderAPI]
 
 commands:
   celestialdash:
@@ -22,6 +23,7 @@ permissions:
     children:
       celestialdash.use: true
       celestialdash.receive: true
+      celestialdash.amulet: true
       celestialdash.admin: true
 
   celestialdash.use:
@@ -30,6 +32,10 @@ permissions:
 
   celestialdash.receive:
     description: Allows receiving Celestial Tears from storm drops
+    default: true
+
+  celestialdash.amulet:
+    description: Allows using the Celestial Amulet
     default: true
 
   celestialdash.admin:

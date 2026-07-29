@@ -3,7 +3,7 @@
 # Chance per second for a tear to drop near a player during a storm (0.0 - 1.0)
 drop-chance-per-second: 0.03
 
-# Cooldown between drops for each player (in seconds)
+# Cooldown between drops for each player (in seconds, 0 - 86400)
 drop-cooldown-seconds: 60
 
 # Worlds where Celestial Tears will NOT drop during storms
@@ -12,7 +12,7 @@ drop-blacklist-worlds:
   - "world_the_end"
   # Add any other world names here
 
-# Dash cooldown per player (in seconds)
+# Dash cooldown per player (in seconds, 0 - 86400)
 dash-cooldown-seconds: 10
 
 # Dash horizontal strength (forward push)
@@ -24,11 +24,19 @@ dash-vertical-lift: 0.4
 # Custom model data for the Celestial Tear (0 = disabled)
 tear-custom-model-data: 0
 
+# Craftable Celestial Amulet: right-click to remove harmful effects and extinguish fire.
+# Recipe: four Celestial Tears around one Netherite Ingot.
+celestial-amulet:
+  enabled: true
+  recipe-enabled: true
+  uses: 3                # Uses granted to each newly crafted amulet (1 to 64)
+  cooldown-seconds: 60   # Time between uses, in seconds (0 to 86400)
+
 # Regeneration effect after dashing
 regen-duration-seconds: 5
 regen-amplifier: 0   # 0 = Regeneration I, 1 = Regeneration II, etc.
 
-# Dash impact particle
+# Dash impact particle (particle counts are limited to 500)
 dash-particle-enabled: true
 dash-particle-type: "CLOUD"
 dash-particle-count: 40
@@ -43,7 +51,7 @@ dash-sound-name: "ENTITY_PHANTOM_FLAP"
 dash-sound-volume: 1.2
 dash-sound-pitch: 0.6
 
-# Wind trail settings
+# Wind trail settings (particle counts are limited to 500)
 trail-enabled: true
 trail-particle-type: "CLOUD"
 trail-particle-count: 20
@@ -63,7 +71,23 @@ double-dash:
 # Messages (supports & color codes)
 messages:
   cooldown: "&7Celestial Dash ready in &b%seconds%s&7."
+  no-admin-permission: "&cYou don't have permission to use this command."
+  no-use-permission: "&cYou don't have permission to use Celestial Dash."
+  no-amulet-permission: "&cYou don't have permission to use the Celestial Amulet."
   no-tears: "&cYou need at least one &bCelestial Tear &cto use Celestial Dash."
   dash-used: "&bThe celestial wind pushes you forward!"
   second-dash: "&bYou unleash a second celestial dash!"
   tear-drop: "&bA celestial tear materializes from the storm..."
+  config-reloaded: "&aCelestialDash configuration reloaded."
+  player-not-found: "&cPlayer not found: %player%"
+  invalid-amount: "&cInvalid amount. Must be a number > 0."
+  give-success: "&bGave %amount% Celestial Tears to %player%"
+  give-overflow: "&eThe inventory was full; the remaining Tears were dropped at %player%'s location."
+  usage-header: "&eUsage:"
+  usage-reload: "&7 /%label% reload"
+  usage-give: "&7 /%label% give <player> <amount>"
+  amulet-disabled: "&cThe Celestial Amulet is disabled."
+  amulet-no-effects: "&7The amulet finds nothing to purify."
+  amulet-cooldown: "&7Celestial Amulet ready in &b%seconds%s&7."
+  amulet-used: "&bCelestial energy purifies you. &7Uses left: &f%uses%"
+  amulet-depleted: "&7The Celestial Amulet has lost its light."

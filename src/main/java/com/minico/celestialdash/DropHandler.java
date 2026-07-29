@@ -30,6 +30,10 @@ public class DropHandler {
             @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
+                    if (!player.hasPermission("celestialdash.receive")) {
+                        continue;
+                    }
+
                     World world = player.getWorld();
 
                     // Skip blacklisted worlds
