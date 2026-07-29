@@ -126,16 +126,6 @@ Tears created before 1.1.5 do not have the new internal marker and are not recog
 - Prevented duplicate off-hand interaction handling and cleaned expired player state automatically.
 - Added unit tests for configuration clamping and cooldown rounding.
 
-## Building
-
-Build with Maven:
-
-```bash
-mvn clean package
-```
-
-The plugin JAR is created in `target/CelestialDash-1.1.5.jar`.
-
 ## License
 
 CelestialDash is released under the [MIT License](LICENSE).
