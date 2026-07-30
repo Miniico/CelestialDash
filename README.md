@@ -169,19 +169,6 @@ Celestial Tears and Celestial Amulets use internal Persistent Data Container mar
 
 Tears created before 1.1.5 do not have the new internal marker and are not recognized by this version. Replace them with new storm drops or issue new Tears with `/celestialdash give`.
 
-## What's New in 1.1.5
-
-- Added the craftable, configurable Celestial Amulet.
-- Added a Netherite Ingot amulet recipe and configurable uses and cooldown.
-- Added `celestialdash.amulet`, `celestialdash.use`, and `celestialdash.receive` permission checks.
-- Added internal item markers to prevent renamed vanilla items from being used as Celestial Tears or Amulets.
-- Added configurable command, permission, and amulet messages.
-- Added command tab completion and safe `/give` inventory-overflow handling.
-- Added configuration bounds validation and warnings for invalid values.
-- Fixed cooldown feedback to round up correctly while any cooldown time remains.
-- Prevented duplicate off-hand interaction handling and cleaned expired player state automatically.
-- Added unit tests for configuration clamping and cooldown rounding.
-
 ## What's New in 1.1.6
 
 - Added an optional bundled resource pack with custom 32x32 pixel-art models for Celestial Tears and Celestial Amulets. It uses the reserved CustomModelData values `22001` and `22002` while leaving vanilla Ghast Tears and Nautilus Shells unchanged.
