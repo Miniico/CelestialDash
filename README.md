@@ -32,11 +32,7 @@ If Double Dash is enabled, right-click again within the configured combo window 
 
 Craft the amulet with four Celestial Tears and one Netherite Ingot:
 
-```text
-Empty          | Celestial Tear | Empty
-Celestial Tear | Netherite Ingot | Celestial Tear
-Empty          | Celestial Tear | Empty
-```
+<img width="342" height="147" alt="imagen" src="https://github.com/user-attachments/assets/443ec236-e781-4380-9aca-80bf6a9e89b0" />
 
 Hold the amulet in your main hand and right-click to remove configured effects. By default, it removes:
 
