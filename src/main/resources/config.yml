@@ -6,6 +6,10 @@ drop-chance-per-second: 0.03
 # Cooldown between drops for each player (in seconds, 0 - 86400)
 drop-cooldown-seconds: 60
 
+# Where storm-generated Tears are delivered: GROUND or INVENTORY.
+# INVENTORY drops any overflow at the player's location.
+drop-delivery: "GROUND"
+
 # Worlds where Celestial Tears will NOT drop during storms
 drop-blacklist-worlds:
   - "world_nether"
@@ -15,14 +19,34 @@ drop-blacklist-worlds:
 # Dash cooldown per player (in seconds, 0 - 86400)
 dash-cooldown-seconds: 10
 
+# Worlds where Celestial Dash cannot be used. Players with celestialdash.bypass-dash-blacklist bypass this list.
+dash-blacklist-worlds: []
+
 # Dash horizontal strength (forward push)
 dash-strength: 1.8
 
 # Dash vertical lift
 dash-vertical-lift: 0.4
 
-# Custom model data for the Celestial Tear (0 = disabled)
-tear-custom-model-data: 0
+# Custom model data for the Celestial Tear. The bundled pack uses 22001.
+# Set to 0 to disable the custom appearance.
+tear-custom-model-data: 22001
+
+# Optional server resource pack delivery settings.
+# The bundled Google Drive URL and SHA-1 are ready to use.
+# Set enabled to true to send the bundled pack to players when they join.
+# Leave required false to let players decline the download; true disconnects players who decline it.
+# sha1 must contain the ZIP's 40-character SHA-1 when enabled is true.
+# Players receive the pack when they join; reload this configuration before new players join.
+resource-pack:
+  enabled: false
+  url: "https://drive.google.com/uc?export=download&id=1FXO5hS3Rg7FAUsn6Oq6ZdENKq0hBYS9C"
+  sha1: "21ddb9da21e3f74b41514d662700a25c2b10a750"
+  required: false
+  prompt: "&bThis server uses the CelestialDash resource pack."
+
+# Maximum amount accepted by /celestialdash give (1 to 2304)
+give-max-amount: 2304
 
 # Craftable Celestial Amulet: right-click to remove harmful effects and extinguish fire.
 # Recipe: four Celestial Tears around one Netherite Ingot.
@@ -30,7 +54,22 @@ celestial-amulet:
   enabled: true
   recipe-enabled: true
   uses: 3                # Uses granted to each newly crafted amulet (1 to 64)
+  # The bundled resource pack uses 22002. Set to 0 to disable the custom appearance.
+  custom-model-data: 22002
   cooldown-seconds: 60   # Time between uses, in seconds (0 to 86400)
+  # Bukkit potion effect names removed by the amulet. Invalid entries are ignored with a warning.
+  # Fire is always extinguished.
+  purifiable-effects:
+    - POISON
+    - WITHER
+    - SLOW
+    - WEAKNESS
+    - BLINDNESS
+    - HUNGER
+    - LEVITATION
+    - DARKNESS
+    - UNLUCK
+    - BAD_OMEN
 
 # Regeneration effect after dashing
 regen-duration-seconds: 5
@@ -67,12 +106,15 @@ double-dash:
   enabled: true
   window-ms: 4000            # Time allowed between dash1 and dash2 (milliseconds)
   fall-immunity-ticks: 40   # Prevent fall damage ONLY after the second dash (2 seconds = 40 ticks)
+  strength-multiplier: 1.2  # Horizontal strength multiplier for the second dash (0.0 to 10.0)
+  lift-multiplier: 1.1      # Vertical lift multiplier for the second dash (0.0 to 10.0)
 
 # Messages (supports & color codes)
 messages:
   cooldown: "&7Celestial Dash ready in &b%seconds%s&7."
   no-admin-permission: "&cYou don't have permission to use this command."
   no-use-permission: "&cYou don't have permission to use Celestial Dash."
+  dash-world-disabled: "&cCelestial Dash is disabled in this world."
   no-amulet-permission: "&cYou don't have permission to use the Celestial Amulet."
   no-tears: "&cYou need at least one &bCelestial Tear &cto use Celestial Dash."
   dash-used: "&bThe celestial wind pushes you forward!"
@@ -80,12 +122,17 @@ messages:
   tear-drop: "&bA celestial tear materializes from the storm..."
   config-reloaded: "&aCelestialDash configuration reloaded."
   player-not-found: "&cPlayer not found: %player%"
-  invalid-amount: "&cInvalid amount. Must be a number > 0."
+  invalid-amount: "&cInvalid amount. Must be a number between 1 and %max%."
   give-success: "&bGave %amount% Celestial Tears to %player%"
   give-overflow: "&eThe inventory was full; the remaining Tears were dropped at %player%'s location."
+  resource-pack-sent: "&aThe resource-pack request was sent to %player%."
+  resource-pack-disabled: "&cResource-pack delivery is disabled in the configuration."
+  resource-pack-invalid-configuration: "&cThe resource-pack configuration is invalid. Check the server log."
+  resource-pack-send-failed: "&cThe resource-pack request could not be sent. Check the server log."
   usage-header: "&eUsage:"
   usage-reload: "&7 /%label% reload"
   usage-give: "&7 /%label% give <player> <amount>"
+  usage-pack-send: "&7 /%label% pack send <player>"
   amulet-disabled: "&cThe Celestial Amulet is disabled."
   amulet-no-effects: "&7The amulet finds nothing to purify."
   amulet-cooldown: "&7Celestial Amulet ready in &b%seconds%s&7."

@@ -23,18 +23,21 @@ public final class CelestialAmulet {
     private static NamespacedKey instanceKey;
     private static NamespacedKey recipeKey;
     private static int maxUses = 3;
+    private static int customModelData = 0;
 
     private CelestialAmulet() {
     }
 
-    public static void initialize(JavaPlugin plugin, int configuredMaxUses) {
+    public static void initialize(JavaPlugin plugin, int configuredMaxUses, int configuredCustomModelData) {
         amuletKey = new NamespacedKey(plugin, "celestial_amulet");
         usesKey = new NamespacedKey(plugin, "celestial_amulet_uses");
         instanceKey = new NamespacedKey(plugin, "celestial_amulet_instance");
         recipeKey = new NamespacedKey(plugin, "celestial_amulet_recipe");
         maxUses = configuredMaxUses;
+        customModelData = configuredCustomModelData;
     }
 
+    @SuppressWarnings("deprecation") // Keeps item metadata compatible with the supported server range.
     public static ItemStack create() {
         ItemStack item = new ItemStack(Material.NAUTILUS_SHELL);
         ItemMeta meta = item.getItemMeta();
@@ -45,6 +48,11 @@ public final class CelestialAmulet {
         meta.setDisplayName(ChatColor.AQUA + "Celestial Amulet");
         updateLore(meta, maxUses);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
+        // Optional CustomModelData for the bundled resource pack.
+        if (customModelData > 0) {
+            meta.setCustomModelData(customModelData);
+        }
 
         PersistentDataContainer data = meta.getPersistentDataContainer();
         data.set(amuletKey, PersistentDataType.BYTE, (byte) 1);
@@ -104,6 +112,7 @@ public final class CelestialAmulet {
         return recipeKey;
     }
 
+    @SuppressWarnings("deprecation") // Keeps item metadata compatible with the supported server range.
     private static void updateLore(ItemMeta meta, int remainingUses) {
         meta.setLore(List.of(
                 ChatColor.GRAY + "Purifies harmful effects",

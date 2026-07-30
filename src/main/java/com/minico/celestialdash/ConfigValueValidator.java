@@ -9,11 +9,11 @@ final class ConfigValueValidator {
         return Math.max(min, Math.min(max, value));
     }
 
-    static long clamp(long value, long min, long max) {
-        return Math.max(min, Math.min(max, value));
+    static long clampNonNegative(long value, long max) {
+        return Math.max(0L, Math.min(max, value));
     }
 
-    static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
+    static double clampNonNegative(double value, double max) {
+        return Math.max(0.0, Math.min(max, value));
     }
 }

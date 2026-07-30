@@ -1,0 +1,27 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "index": 0,
+    "entries": [
+      {
+        "threshold": 22002,
+        "model": {
+          "type": "minecraft:model",
+          "model": "celestialdash:item/celestial_amulet"
+        }
+      },
+      {
+        "threshold": 22003,
+        "model": {
+          "type": "minecraft:model",
+          "model": "celestialdash:item/nautilus_shell_base"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "celestialdash:item/nautilus_shell_base"
+    }
+  }
+}

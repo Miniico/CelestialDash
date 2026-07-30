@@ -10,6 +10,7 @@ public class Messages {
     private String cooldownTemplate;
     private String noAdminPermissionMessage;
     private String noUsePermissionMessage;
+    private String dashWorldDisabledMessage;
     private String noAmuletPermissionMessage;
     private String noTearsMessage;
     private String dashUsedMessage;
@@ -20,9 +21,14 @@ public class Messages {
     private String invalidAmountMessage;
     private String giveSuccessTemplate;
     private String giveOverflowTemplate;
+    private String resourcePackSentTemplate;
+    private String resourcePackDisabledMessage;
+    private String resourcePackInvalidConfigurationMessage;
+    private String resourcePackSendFailedMessage;
     private String usageHeaderMessage;
     private String usageReloadTemplate;
     private String usageGiveTemplate;
+    private String usagePackSendTemplate;
     private String amuletDisabledMessage;
     private String amuletNoEffectsMessage;
     private String amuletCooldownTemplate;
@@ -47,6 +53,11 @@ public class Messages {
         noUsePermissionMessage = color(plugin.getConfig().getString(
                 "messages.no-use-permission",
                 "&cYou don't have permission to use Celestial Dash."
+        ));
+
+        dashWorldDisabledMessage = color(plugin.getConfig().getString(
+                "messages.dash-world-disabled",
+                "&cCelestial Dash is disabled in this world."
         ));
 
         noAmuletPermissionMessage = color(plugin.getConfig().getString(
@@ -86,7 +97,7 @@ public class Messages {
 
         invalidAmountMessage = color(plugin.getConfig().getString(
                 "messages.invalid-amount",
-                "&cInvalid amount. Must be a number > 0."
+                "&cInvalid amount. Must be a number between 1 and %max%."
         ));
 
         giveSuccessTemplate = color(plugin.getConfig().getString(
@@ -97,6 +108,26 @@ public class Messages {
         giveOverflowTemplate = color(plugin.getConfig().getString(
                 "messages.give-overflow",
                 "&eThe inventory was full; the remaining Tears were dropped at %player%'s location."
+        ));
+
+        resourcePackSentTemplate = color(plugin.getConfig().getString(
+                "messages.resource-pack-sent",
+                "&aThe resource-pack request was sent to %player%."
+        ));
+
+        resourcePackDisabledMessage = color(plugin.getConfig().getString(
+                "messages.resource-pack-disabled",
+                "&cResource-pack delivery is disabled in the configuration."
+        ));
+
+        resourcePackInvalidConfigurationMessage = color(plugin.getConfig().getString(
+                "messages.resource-pack-invalid-configuration",
+                "&cThe resource-pack configuration is invalid. Check the server log."
+        ));
+
+        resourcePackSendFailedMessage = color(plugin.getConfig().getString(
+                "messages.resource-pack-send-failed",
+                "&cThe resource-pack request could not be sent. Check the server log."
         ));
 
         usageHeaderMessage = color(plugin.getConfig().getString(
@@ -112,6 +143,11 @@ public class Messages {
         usageGiveTemplate = color(plugin.getConfig().getString(
                 "messages.usage-give",
                 "&7 /%label% give <player> <amount>"
+        ));
+
+        usagePackSendTemplate = color(plugin.getConfig().getString(
+                "messages.usage-pack-send",
+                "&7 /%label% pack send <player>"
         ));
 
         amuletDisabledMessage = color(plugin.getConfig().getString(
@@ -156,6 +192,10 @@ public class Messages {
         return noUsePermissionMessage;
     }
 
+    public String getDashWorldDisabledMessage() {
+        return dashWorldDisabledMessage;
+    }
+
     public String getNoAmuletPermissionMessage() {
         return noAmuletPermissionMessage;
     }
@@ -176,8 +216,8 @@ public class Messages {
         return playerNotFoundTemplate.replace("%player%", player);
     }
 
-    public String getInvalidAmountMessage() {
-        return invalidAmountMessage;
+    public String formatInvalidAmount(int maxAmount) {
+        return invalidAmountMessage.replace("%max%", String.valueOf(maxAmount));
     }
 
     public String formatGiveSuccess(String player, int amount) {
@@ -190,6 +230,22 @@ public class Messages {
         return giveOverflowTemplate.replace("%player%", player);
     }
 
+    public String formatResourcePackSent(String player) {
+        return resourcePackSentTemplate.replace("%player%", player);
+    }
+
+    public String getResourcePackDisabledMessage() {
+        return resourcePackDisabledMessage;
+    }
+
+    public String getResourcePackInvalidConfigurationMessage() {
+        return resourcePackInvalidConfigurationMessage;
+    }
+
+    public String getResourcePackSendFailedMessage() {
+        return resourcePackSendFailedMessage;
+    }
+
     public String getUsageHeaderMessage() {
         return usageHeaderMessage;
     }
@@ -200,6 +256,10 @@ public class Messages {
 
     public String formatUsageGive(String label) {
         return usageGiveTemplate.replace("%label%", label);
+    }
+
+    public String formatUsagePackSend(String label) {
+        return usagePackSendTemplate.replace("%label%", label);
     }
 
     public String getAmuletDisabledMessage() {
@@ -229,6 +289,7 @@ public class Messages {
         player.sendMessage(tearDropMessage);
     }
 
+    @SuppressWarnings("deprecation") // Retains legacy color-code support across the target server range.
     private String color(String input) {
         return ChatColor.translateAlternateColorCodes('&', input);
     }

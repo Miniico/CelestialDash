@@ -15,14 +15,16 @@ import java.util.List;
 
 /**
  * Utility methods for working with Celestial Tears.
- *
  * Responsibilities:
  *  - Create Celestial Tear items
  *  - Identify whether an ItemStack is a Celestial Tear
  *  - Count and consume tears from player inventories
  *  - Handle optional CustomModelData support
  */
-public class TearUtils {
+public final class TearUtils {
+
+    private TearUtils() {
+    }
 
     /**
      * CustomModelData value used for Celestial Tears.
@@ -48,12 +50,18 @@ public class TearUtils {
      *
      * @return new ItemStack representing 1 Celestial Tear
      */
+    @SuppressWarnings("deprecation") // Keeps item metadata compatible with the supported server range.
     public static ItemStack createCelestialTear() {
         ItemStack item = new ItemStack(Material.GHAST_TEAR, 1);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {
-            // Extremely rare but safe-guard: return raw tear without meta.
+            // Extremely rare but safe fallback: return a raw Tear without metadata.
             return item;
+        }
+
+        NamespacedKey tearKey = celestialTearKey;
+        if (tearKey == null) {
+            throw new IllegalStateException("Celestial Tear settings have not been initialized.");
         }
 
         // Display name and lore for identification and resource pack hints.
@@ -69,7 +77,7 @@ public class TearUtils {
         }
 
         meta.getPersistentDataContainer().set(
-                celestialTearKey,
+                tearKey,
                 PersistentDataType.BYTE,
                 (byte) 1
         );
@@ -94,7 +102,6 @@ public class TearUtils {
      * Checks whether an ItemStack is considered a Celestial Tear.
      * This method is intentionally strict so we don't accidentally match
      * unrelated ghast tears from other plugins.
-     *
      * Conditions:
      *  - Material must be GHAST_TEAR
      *  - Must contain this plugin's PersistentDataContainer marker
@@ -112,12 +119,13 @@ public class TearUtils {
         }
 
         ItemMeta meta = item.getItemMeta();
-        if (meta == null || celestialTearKey == null) {
+        NamespacedKey tearKey = celestialTearKey;
+        if (meta == null || tearKey == null) {
             return false;
         }
 
         PersistentDataContainer data = meta.getPersistentDataContainer();
-        Byte marker = data.get(celestialTearKey, PersistentDataType.BYTE);
+        Byte marker = data.get(tearKey, PersistentDataType.BYTE);
         if (marker == null || marker != (byte) 1) {
             return false;
         }
@@ -156,9 +164,13 @@ public class TearUtils {
     /**
      * Finds the first inventory slot containing a Celestial Tear.
      *
+     * <p>Retained as a public compatibility helper. Dash handling consumes the
+     * active main-hand slot directly, so it does not use this lookup.</p>
+     *
      * @param player player whose inventory will be scanned
-     * @return slot index or -1 if none found
+     * @return slot index or -1 if none is found
      */
+    @SuppressWarnings("unused") // Public API retained for external integrations.
     public static int findTearSlot(Player player) {
         PlayerInventory inv = player.getInventory();
         for (int i = 0; i < inv.getSize(); i++) {

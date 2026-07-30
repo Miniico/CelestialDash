@@ -22,15 +22,19 @@ public class CelestialTabCompleter implements TabCompleter {
         }
 
         if (args.length == 1) {
-            return complete(args[0], List.of("give", "reload"));
+            return complete(args[0], List.of("give", "reload", "pack"));
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> startsWith(name, args[1]))
-                    .sorted(String.CASE_INSENSITIVE_ORDER)
-                    .toList();
+            return completeOnlinePlayerNames(args[1]);
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("pack")) {
+            return complete(args[1], List.of("send"));
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("pack") && args[1].equalsIgnoreCase("send")) {
+            return completeOnlinePlayerNames(args[2]);
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
@@ -38,6 +42,14 @@ public class CelestialTabCompleter implements TabCompleter {
         }
 
         return List.of();
+    }
+
+    private List<String> completeOnlinePlayerNames(String input) {
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .filter(name -> startsWith(name, input))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
     }
 
     private List<String> complete(String input, List<String> candidates) {

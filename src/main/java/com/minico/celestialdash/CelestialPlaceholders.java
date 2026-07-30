@@ -8,7 +8,6 @@ import java.util.Locale;
 
 /**
  * PlaceholderAPI expansion for CelestialDash.
- *
  * Provides:
  *   %celestialdash_tears%        -> total Celestial Tears in player's inventory
  *   %celestialdash_cooldown%    -> remaining dash cooldown in seconds
@@ -49,6 +48,7 @@ public class CelestialPlaceholders extends PlaceholderExpansion {
      * Version string taken from plugin.yml.
      */
     @Override
+    @SuppressWarnings("deprecation") // Uses the legacy Bukkit descriptor API for broad compatibility.
     public @NotNull String getVersion() {
         return plugin.getDescription().getVersion();
     }

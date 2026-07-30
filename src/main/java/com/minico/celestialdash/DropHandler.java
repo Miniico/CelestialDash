@@ -3,6 +3,9 @@ package com.minico.celestialdash;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -10,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class DropHandler {
+public class DropHandler implements Listener {
 
     private final CelestialDash plugin;
     private BukkitRunnable task;
@@ -37,7 +40,8 @@ public class DropHandler {
                     World world = player.getWorld();
 
                     // Skip blacklisted worlds
-                    if (plugin.isWorldBlacklistedForDrops(world.getName())) {
+                    PluginSettings.DropSettings dropSettings = plugin.getSettings().drops();
+                    if (dropSettings.isWorldBlacklisted(world.getName())) {
                         continue;
                     }
 
@@ -50,13 +54,20 @@ public class DropHandler {
                     long now = System.currentTimeMillis();
                     long last = lastDrop.getOrDefault(uuid, 0L);
 
-                    if (now - last < plugin.getDropCooldownMs()) {
+                    if (now - last < dropSettings.cooldownMs()) {
                         continue;
                     }
 
-                    if (Math.random() < plugin.getDropChance()) {
+                    if (Math.random() < dropSettings.chance()) {
                         ItemStack tear = TearUtils.createCelestialTear();
-                        world.dropItemNaturally(player.getLocation(), tear);
+                        if (dropSettings.deliveryMode() == PluginSettings.DropDeliveryMode.INVENTORY) {
+                            Map<Integer, ItemStack> leftovers = player.getInventory().addItem(tear);
+                            for (ItemStack leftover : leftovers.values()) {
+                                world.dropItemNaturally(player.getLocation(), leftover);
+                            }
+                        } else {
+                            world.dropItemNaturally(player.getLocation(), tear);
+                        }
                         lastDrop.put(uuid, now);
 
                         // Notify only the player who received the tear
@@ -76,5 +87,11 @@ public class DropHandler {
             task = null;
         }
         lastDrop.clear();
+    }
+
+    @EventHandler
+    @SuppressWarnings("unused")
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        lastDrop.remove(event.getPlayer().getUniqueId());
     }
 }

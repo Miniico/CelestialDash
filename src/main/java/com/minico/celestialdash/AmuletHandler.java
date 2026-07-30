@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -23,19 +24,6 @@ import java.util.UUID;
 
 public class AmuletHandler implements Listener {
 
-    private static final Set<PotionEffectType> PURIFIABLE_EFFECTS = Set.of(
-            PotionEffectType.POISON,
-            PotionEffectType.WITHER,
-            PotionEffectType.SLOW,
-            PotionEffectType.WEAKNESS,
-            PotionEffectType.BLINDNESS,
-            PotionEffectType.HUNGER,
-            PotionEffectType.LEVITATION,
-            PotionEffectType.DARKNESS,
-            PotionEffectType.UNLUCK,
-            PotionEffectType.BAD_OMEN
-    );
-
     private final CelestialDash plugin;
     private final Messages messages;
     private final Map<UUID, Long> lastUse = new HashMap<>();
@@ -46,6 +34,7 @@ public class AmuletHandler implements Listener {
     }
 
     @EventHandler
+    @SuppressWarnings("unused")
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         if (!(event.getRecipe() instanceof Keyed keyed)
                 || !CelestialAmulet.getRecipeKey().equals(keyed.getKey())) {
@@ -57,6 +46,7 @@ public class AmuletHandler implements Listener {
     }
 
     @EventHandler
+    @SuppressWarnings("unused")
     public void onUseAmulet(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) {
             return;
@@ -75,7 +65,7 @@ public class AmuletHandler implements Listener {
         event.setCancelled(true);
         Player player = event.getPlayer();
 
-        if (!plugin.isCelestialAmuletEnabled()) {
+        if (!plugin.getSettings().amulet().enabled()) {
             sendActionBar(player, messages.getAmuletDisabledMessage());
             return;
         }
@@ -85,7 +75,7 @@ public class AmuletHandler implements Listener {
         }
 
         long now = System.currentTimeMillis();
-        long cooldown = plugin.getCelestialAmuletCooldownMs();
+        long cooldown = plugin.getSettings().amulet().cooldownMs();
         long last = lastUse.getOrDefault(player.getUniqueId(), 0L);
         long elapsed = now - last;
         if (elapsed < cooldown) {
@@ -116,10 +106,17 @@ public class AmuletHandler implements Listener {
         lastUse.clear();
     }
 
+    @EventHandler
+    @SuppressWarnings("unused")
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        lastUse.remove(event.getPlayer().getUniqueId());
+    }
+
     private boolean purify(Player player) {
         boolean purified = false;
+        Set<PotionEffectType> purifiableEffects = plugin.getSettings().amulet().purifiableEffects();
         for (PotionEffect effect : player.getActivePotionEffects()) {
-            if (PURIFIABLE_EFFECTS.contains(effect.getType())) {
+            if (purifiableEffects.contains(effect.getType())) {
                 player.removePotionEffect(effect.getType());
                 purified = true;
             }
@@ -132,6 +129,7 @@ public class AmuletHandler implements Listener {
         return purified;
     }
 
+    @SuppressWarnings("deprecation") // Required for action-bar support on older target servers.
     private void sendActionBar(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
     }

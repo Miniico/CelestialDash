@@ -12,7 +12,7 @@
     <artifactId>CelestialDash</artifactId>
 
     <!-- Version actualizada -->
-    <version>1.1.5</version>
+    <version>1.1.6</version>
     <name>CelestialDash</name>
     <description>A storm-based dash system powered by Celestial Tears</description>
 
@@ -23,10 +23,10 @@
     </properties>
 
     <dependencies>
-        <!-- Spigot / Paper API -->
+        <!-- Paper API; the plugin uses Bukkit APIs shared by Spigot, Paper, and Purpur. -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.20.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -45,13 +45,20 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.seeseemelk</groupId>
+            <artifactId>MockBukkit-v1.20</artifactId>
+            <version>3.4.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
     <repositories>
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
 
         <repository>

@@ -14,6 +14,7 @@ import java.util.Map;
  * Main command executor for /celestialdash
  * Subcommands:
  *   /celestialdash give <player> <amount>
+ *   /celestialdash pack send <player>
  *   /celestialdash reload
  */
 public class CelestialCommand implements CommandExecutor {
@@ -41,10 +42,29 @@ public class CelestialCommand implements CommandExecutor {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             plugin.reloadConfig();
             plugin.loadSettings();
-            TearUtils.initialize(plugin, plugin.getTearCustomModelData());
+            TearUtils.initialize(plugin, plugin.getSettings().tearCustomModelData());
             plugin.refreshAmuletRecipe();
             messages.reload();
             sender.sendMessage(messages.getConfigReloadedMessage());
+            return true;
+        }
+
+        // /celestialdash pack send <player>
+        if (args.length == 3 && args[0].equalsIgnoreCase("pack") && args[1].equalsIgnoreCase("send")) {
+            Player target = Bukkit.getPlayer(args[2]);
+            if (target == null) {
+                sender.sendMessage(messages.formatPlayerNotFound(args[2]));
+                return true;
+            }
+
+            ResourcePackHandler.SendResult result = plugin.getResourcePackHandler().sendTo(target);
+            switch (result) {
+                case SENT -> sender.sendMessage(messages.formatResourcePackSent(target.getName()));
+                case DISABLED -> sender.sendMessage(messages.getResourcePackDisabledMessage());
+                case INVALID_CONFIGURATION -> sender.sendMessage(messages.getResourcePackInvalidConfigurationMessage());
+                case OFFLINE -> sender.sendMessage(messages.formatPlayerNotFound(args[2]));
+                case FAILED -> sender.sendMessage(messages.getResourcePackSendFailedMessage());
+            }
             return true;
         }
 
@@ -60,9 +80,9 @@ public class CelestialCommand implements CommandExecutor {
             int amount;
             try {
                 amount = Integer.parseInt(args[2]);
-                if (amount < 1) throw new NumberFormatException();
+                if (amount < 1 || amount > plugin.getSettings().giveMaxAmount()) throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                sender.sendMessage(messages.getInvalidAmountMessage());
+                sender.sendMessage(messages.formatInvalidAmount(plugin.getSettings().giveMaxAmount()));
                 return true;
             }
 
@@ -81,6 +101,7 @@ public class CelestialCommand implements CommandExecutor {
         sender.sendMessage(messages.getUsageHeaderMessage());
         sender.sendMessage(messages.formatUsageReload(label));
         sender.sendMessage(messages.formatUsageGive(label));
+        sender.sendMessage(messages.formatUsagePackSend(label));
         return true;
     }
 }

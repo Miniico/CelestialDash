@@ -15,14 +15,14 @@ class ConfigValueValidatorTest {
 
     @Test
     void clampsLongCooldownValues() {
-        assertEquals(0L, ConfigValueValidator.clamp(-1L, 0L, 86_400L));
-        assertEquals(86_400L, ConfigValueValidator.clamp(100_000L, 0L, 86_400L));
+        assertEquals(0L, ConfigValueValidator.clampNonNegative(-1L, 86_400L));
+        assertEquals(86_400L, ConfigValueValidator.clampNonNegative(100_000L, 86_400L));
     }
 
     @Test
     void clampsDecimalValues() {
-        assertEquals(0.0, ConfigValueValidator.clamp(-0.5, 0.0, 1.0));
-        assertEquals(1.0, ConfigValueValidator.clamp(1.2, 0.0, 1.0));
-        assertEquals(0.3, ConfigValueValidator.clamp(0.3, 0.0, 1.0));
+        assertEquals(0.0, ConfigValueValidator.clampNonNegative(-0.5, 1.0));
+        assertEquals(1.0, ConfigValueValidator.clampNonNegative(1.2, 1.0));
+        assertEquals(0.3, ConfigValueValidator.clampNonNegative(0.3, 1.0));
     }
 }

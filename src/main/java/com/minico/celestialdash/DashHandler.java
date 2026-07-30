@@ -34,6 +34,8 @@ public class DashHandler implements Listener {
     private final Map<UUID, Long> comboWindowEnd = new HashMap<>();
     // Fall-damage immunity after second dash
     private final Map<UUID, Long> fallImmunityUntil = new HashMap<>();
+    // One active particle-trail task per player.
+    private final Map<UUID, BukkitTask> trailTasks = new HashMap<>();
     private final BukkitTask stateCleanupTask;
 
     public DashHandler(CelestialDash plugin, Messages messages) {
@@ -48,6 +50,7 @@ public class DashHandler implements Listener {
     }
 
     @EventHandler
+    @SuppressWarnings({"unused", "deprecation"})
     public void onPlayerUseTear(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) {
             return;
@@ -75,9 +78,19 @@ public class DashHandler implements Listener {
             return;
         }
 
+        PluginSettings.DashSettings dashSettings = plugin.getSettings().dash();
+        if (dashSettings.isWorldBlacklisted(player.getWorld().getName())
+                && !player.hasPermission("celestialdash.bypass-dash-blacklist")) {
+            player.spigot().sendMessage(
+                    ChatMessageType.ACTION_BAR,
+                    TextComponent.fromLegacyText(messages.getDashWorldDisabledMessage())
+            );
+            return;
+        }
+
         long now = System.currentTimeMillis();
 
-        boolean doubleDashEnabled = plugin.isDoubleDashEnabled();
+        boolean doubleDashEnabled = dashSettings.doubleDash().enabled();
         boolean isSecondDash = false;
 
         // Check if this click should count as second dash
@@ -96,7 +109,7 @@ public class DashHandler implements Listener {
         // Cooldown only blocks the FIRST dash, never the second
         if (!isSecondDash) {
             long last = lastDash.getOrDefault(uuid, 0L);
-            long cd = plugin.getDashCooldownMs();
+            long cd = dashSettings.cooldownMs();
             long diff = now - last;
 
             if (diff < cd) {
@@ -111,10 +124,11 @@ public class DashHandler implements Listener {
             }
         }
 
-        // Find a tear in inventory
-        int slot = TearUtils.findTearSlot(player);
+        // Consume the exact tear that triggered the interaction. Searching the
+        // whole inventory here could otherwise spend a different stack first.
+        int slot = player.getInventory().getHeldItemSlot();
         if (slot == -1) {
-            // No Celestial Tears → action bar message
+            // The held slot is unavailable; do not consume an unrelated stack.
             player.spigot().sendMessage(
                     ChatMessageType.ACTION_BAR,
                     TextComponent.fromLegacyText(messages.getNoTearsMessage())
@@ -135,7 +149,7 @@ public class DashHandler implements Listener {
             performDash(player, false);
 
             if (doubleDashEnabled) {
-                long windowMs = plugin.getDoubleDashWindowMs();
+                long windowMs = dashSettings.doubleDash().windowMs();
                 comboWindowEnd.put(uuid, now + windowMs);
             }
         }
@@ -145,7 +159,7 @@ public class DashHandler implements Listener {
     }
 
     private void applyFallImmunity(UUID uuid) {
-        int ticks = plugin.getDoubleDashFallImmunityTicks();
+        int ticks = plugin.getSettings().dash().doubleDash().fallImmunityTicks();
         if (ticks <= 0) return;
 
         long durationMs = ticks * 50L;
@@ -153,6 +167,7 @@ public class DashHandler implements Listener {
     }
 
     @EventHandler
+    @SuppressWarnings("unused")
     public void onFallDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
@@ -170,11 +185,13 @@ public class DashHandler implements Listener {
     }
 
     @EventHandler
+    @SuppressWarnings("unused")
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         // Keep the normal dash cooldown across reconnects.
         comboWindowEnd.remove(uuid);
         fallImmunityUntil.remove(uuid);
+        cancelTrail(uuid);
     }
 
     public void stop() {
@@ -182,11 +199,13 @@ public class DashHandler implements Listener {
         lastDash.clear();
         comboWindowEnd.clear();
         fallImmunityUntil.clear();
+        trailTasks.values().forEach(BukkitTask::cancel);
+        trailTasks.clear();
     }
 
     private void cleanupExpiredState() {
         long now = System.currentTimeMillis();
-        long cooldown = plugin.getDashCooldownMs();
+        long cooldown = plugin.getSettings().dash().cooldownMs();
 
         lastDash.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
         comboWindowEnd.entrySet().removeIf(entry -> now > entry.getValue());
@@ -197,13 +216,14 @@ public class DashHandler implements Listener {
         // Direction and base strength
         Vector dir = player.getLocation().getDirection().normalize();
 
-        double strength = plugin.getDashStrength();
-        double lift = plugin.getDashLift();
+        PluginSettings.DashSettings dashSettings = plugin.getSettings().dash();
+        double strength = dashSettings.strength();
+        double lift = dashSettings.lift();
 
         if (secondDash) {
-            // Slight buff on second dash (tweak if needed)
-            strength *= 1.2;
-            lift *= 1.1;
+            PluginSettings.DoubleDashSettings doubleDashSettings = dashSettings.doubleDash();
+            strength *= doubleDashSettings.strengthMultiplier();
+            lift *= doubleDashSettings.liftMultiplier();
         }
 
         Vector velocity = dir.multiply(strength);
@@ -211,11 +231,11 @@ public class DashHandler implements Listener {
         player.setVelocity(velocity);
 
         // Regeneration
-        if (plugin.getRegenDurationTicks() > 0) {
+        if (dashSettings.regenerationDurationTicks() > 0) {
             player.addPotionEffect(new PotionEffect(
                     PotionEffectType.REGENERATION,
-                    plugin.getRegenDurationTicks(),
-                    plugin.getRegenAmplifier(),
+                    dashSettings.regenerationDurationTicks(),
+                    dashSettings.regenerationAmplifier(),
                     false,
                     true,
                     true
@@ -223,63 +243,31 @@ public class DashHandler implements Listener {
         }
 
         // Impact particle
-        if (plugin.isDashParticleEnabled()) {
+        PluginSettings.ParticleSettings impactParticle = dashSettings.impactParticle();
+        if (impactParticle.enabled()) {
             player.getWorld().spawnParticle(
-                    plugin.getDashParticle(),
+                    impactParticle.type(),
                     player.getLocation(),
-                    plugin.getDashParticleCount(),
-                    plugin.getDashParticleOffsetX(),
-                    plugin.getDashParticleOffsetY(),
-                    plugin.getDashParticleOffsetZ(),
-                    plugin.getDashParticleSpeed()
+                    impactParticle.count(),
+                    impactParticle.offsetX(),
+                    impactParticle.offsetY(),
+                    impactParticle.offsetZ(),
+                    impactParticle.speed()
             );
         }
 
         // Sound
-        if (plugin.isDashSoundEnabled()) {
+        PluginSettings.SoundSettings sound = dashSettings.sound();
+        if (sound.enabled()) {
             player.getWorld().playSound(
                     player.getLocation(),
-                    plugin.getDashSound(),
-                    plugin.getDashSoundVolume(),
-                    plugin.getDashSoundPitch()
+                    sound.sound(),
+                    sound.volume(),
+                    sound.pitch()
             );
         }
 
-        // Trail effect
-        if (plugin.isTrailEnabled()
-                && plugin.getTrailDurationTicks() > 0
-                && plugin.getTrailIntervalTicks() > 0) {
-
-            UUID uuid = player.getUniqueId();
-
-            new BukkitRunnable() {
-                int ticks = 0;
-
-                @Override
-                public void run() {
-                    Player p = Bukkit.getPlayer(uuid);
-                    if (p == null || !p.isOnline() || ticks >= plugin.getTrailDurationTicks()) {
-                        cancel();
-                        return;
-                    }
-
-                    Location back = p.getLocation().clone()
-                            .subtract(p.getLocation().getDirection().normalize().multiply(0.5));
-
-                    p.getWorld().spawnParticle(
-                            plugin.getTrailParticle(),
-                            back,
-                            plugin.getTrailParticleCount(),
-                            plugin.getTrailOffsetX(),
-                            plugin.getTrailOffsetY(),
-                            plugin.getTrailOffsetZ(),
-                            plugin.getTrailSpeed()
-                    );
-
-                    ticks += plugin.getTrailIntervalTicks();
-                }
-            }.runTaskTimer(plugin, 0L, plugin.getTrailIntervalTicks());
-        }
+        startTrail(player);
 
         // Different messages for first and second dash
         if (secondDash) {
@@ -289,12 +277,62 @@ public class DashHandler implements Listener {
         }
     }
 
+    private void startTrail(Player player) {
+        PluginSettings.TrailSettings trailSettings = plugin.getSettings().dash().trail();
+        if (!trailSettings.enabled()
+                || trailSettings.durationTicks() <= 0
+                || trailSettings.intervalTicks() <= 0) {
+            return;
+        }
+
+        UUID uuid = player.getUniqueId();
+        cancelTrail(uuid);
+
+        BukkitRunnable trail = new BukkitRunnable() {
+            int ticks = 0;
+
+            @Override
+            public void run() {
+                Player currentPlayer = Bukkit.getPlayer(uuid);
+                PluginSettings.TrailSettings activeTrailSettings = plugin.getSettings().dash().trail();
+                if (currentPlayer == null || !currentPlayer.isOnline() || ticks >= activeTrailSettings.durationTicks()) {
+                    cancel();
+                    trailTasks.remove(uuid);
+                    return;
+                }
+
+                Location back = currentPlayer.getLocation().clone()
+                        .subtract(currentPlayer.getLocation().getDirection().normalize().multiply(0.5));
+
+                currentPlayer.getWorld().spawnParticle(
+                        activeTrailSettings.particle(),
+                        back,
+                        activeTrailSettings.count(),
+                        activeTrailSettings.offsetX(),
+                        activeTrailSettings.offsetY(),
+                        activeTrailSettings.offsetZ(),
+                        activeTrailSettings.speed()
+                );
+
+                ticks += activeTrailSettings.intervalTicks();
+            }
+        };
+        trailTasks.put(uuid, trail.runTaskTimer(plugin, 0L, trailSettings.intervalTicks()));
+    }
+
+    private void cancelTrail(UUID uuid) {
+        BukkitTask trailTask = trailTasks.remove(uuid);
+        if (trailTask != null) {
+            trailTask.cancel();
+        }
+    }
+
     // ===== Helper methods for placeholders =====
 
     public long getRemainingCooldownSeconds(Player player) {
         UUID uuid = player.getUniqueId();
         long last = lastDash.getOrDefault(uuid, 0L);
-        return calculateRemainingCooldownSeconds(last, System.currentTimeMillis(), plugin.getDashCooldownMs());
+        return calculateRemainingCooldownSeconds(last, System.currentTimeMillis(), plugin.getSettings().dash().cooldownMs());
     }
 
     static long calculateRemainingCooldownSeconds(long lastDashMs, long nowMs, long cooldownMs) {

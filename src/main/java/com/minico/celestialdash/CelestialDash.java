@@ -8,93 +8,23 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
 public class CelestialDash extends JavaPlugin {
 
-    // Tear drops
-    private double dropChance = 0.03;
-    private long dropCooldownMs = 60_000L;
+    private PluginSettings settings = PluginSettings.defaults();
 
-    // Dash core
-    private long dashCooldownMs = 10_000L;
-    private double dashStrength = 1.8;
-    private double dashLift = 0.4;
-
-    // Regeneration
-    private int regenDurationTicks = 5 * 20;
-    private int regenAmplifier = 0;
-
-    // Impact particle
-    private boolean dashParticleEnabled = true;
-    private Particle dashParticle = Particle.CLOUD;
-    private int dashParticleCount = 40;
-    private double dashParticleOffsetX = 0.4;
-    private double dashParticleOffsetY = 0.5;
-    private double dashParticleOffsetZ = 0.4;
-    private double dashParticleSpeed = 0.02;
-
-    // Dash sound
-    private boolean dashSoundEnabled = true;
-    private Sound dashSound = Sound.ENTITY_PHANTOM_FLAP;
-    private float dashSoundVolume = 1.2f;
-    private float dashSoundPitch = 0.6f;
-
-    // Trail
-    private boolean trailEnabled = true;
-    private Particle trailParticle = Particle.CLOUD;
-    private int trailParticleCount = 20;
-    private double trailOffsetX = 0.3;
-    private double trailOffsetY = 0.4;
-    private double trailOffsetZ = 0.3;
-    private double trailSpeed = 0.01;
-    private int trailDurationTicks = 10;
-    private int trailIntervalTicks = 1;
-
-    // Double dash
-    private boolean doubleDashEnabled = true;
-    private long doubleDashWindowMs = 4000L;        // 4 seconds
-    private int doubleDashFallImmunityTicks = 40;   // 2 seconds
-
-    // Tear CustomModelData
-    private int tearCustomModelData = 0;
-
-    // Celestial Amulet
-    private boolean celestialAmuletEnabled = true;
-    private boolean celestialAmuletRecipeEnabled = true;
-    private int celestialAmuletUses = 3;
-    private long celestialAmuletCooldownMs = 60_000L;
-
-    // World blacklist for drops
-    private final Set<String> dropBlacklistWorlds = new HashSet<>();
-
-    // Services
     private Messages messages;
     private DashHandler dashHandler;
     private DropHandler dropHandler;
     private AmuletHandler amuletHandler;
-
-    private static final long MAX_COOLDOWN_SECONDS = 86_400L;
-    private static final long MAX_DOUBLE_DASH_WINDOW_MS = 60_000L;
-    private static final int MAX_REGEN_DURATION_SECONDS = 3_600;
-    private static final int MAX_PARTICLE_COUNT = 500;
-    private static final double MAX_PARTICLE_OFFSET = 10.0;
-    private static final double MAX_PARTICLE_SPEED = 10.0;
-    private static final int MAX_TRAIL_DURATION_TICKS = 1_200;
-    private static final int MAX_TRAIL_INTERVAL_TICKS = 200;
-    private static final int MAX_FALL_IMMUNITY_TICKS = 1_200;
+    private ResourcePackHandler resourcePackHandler;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         loadSettings();
 
-        // Push CustomModelData to TearUtils
-        TearUtils.initialize(this, tearCustomModelData);
-        CelestialAmulet.initialize(this, celestialAmuletUses);
+        TearUtils.initialize(this, settings.tearCustomModelData());
+        initializeAmulet();
 
         messages = new Messages(this);
         messages.reload();
@@ -102,20 +32,22 @@ public class CelestialDash extends JavaPlugin {
         dashHandler = new DashHandler(this, messages);
         dropHandler = new DropHandler(this);
         amuletHandler = new AmuletHandler(this, messages);
+        resourcePackHandler = new ResourcePackHandler(this);
 
         Bukkit.getPluginManager().registerEvents(dashHandler, this);
+        Bukkit.getPluginManager().registerEvents(dropHandler, this);
         Bukkit.getPluginManager().registerEvents(amuletHandler, this);
+        Bukkit.getPluginManager().registerEvents(resourcePackHandler, this);
         registerAmuletRecipe();
 
-        PluginCommand cmd = getCommand("celestialdash");
-        if (cmd != null) {
-            cmd.setExecutor(new CelestialCommand(this, messages));
-            cmd.setTabCompleter(new CelestialTabCompleter());
+        PluginCommand command = getCommand("celestialdash");
+        if (command != null) {
+            command.setExecutor(new CelestialCommand(this, messages));
+            command.setTabCompleter(new CelestialTabCompleter());
         } else {
             getLogger().severe("Command 'celestialdash' is not defined in plugin.yml!");
         }
 
-        // PlaceholderAPI hook
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new CelestialPlaceholders(this).register();
             getLogger().info("PlaceholderAPI hook enabled.");
@@ -136,135 +68,34 @@ public class CelestialDash extends JavaPlugin {
         if (amuletHandler != null) {
             amuletHandler.stop();
         }
+        if (resourcePackHandler != null) {
+            resourcePackHandler.stop();
+        }
         getLogger().info("CelestialDash disabled.");
     }
 
     public void loadSettings() {
-        // Tear drops
-        dropChance = getBoundedDouble("drop-chance-per-second", dropChance, 0.0, 1.0);
-        dropCooldownMs = getBoundedLong("drop-cooldown-seconds", dropCooldownMs / 1000L, 0, MAX_COOLDOWN_SECONDS) * 1000L;
-
-        // Dash core
-        dashCooldownMs = getBoundedLong("dash-cooldown-seconds", dashCooldownMs / 1000L, 0, MAX_COOLDOWN_SECONDS) * 1000L;
-        dashStrength = getBoundedDouble("dash-strength", dashStrength, 0.0, 10.0);
-        dashLift = getBoundedDouble("dash-vertical-lift", dashLift, 0.0, 5.0);
-
-        // Regeneration
-        regenDurationTicks = getBoundedInt("regen-duration-seconds", regenDurationTicks / 20, 0, MAX_REGEN_DURATION_SECONDS) * 20;
-        regenAmplifier = getBoundedInt("regen-amplifier", regenAmplifier, 0, 255);
-
-        // Impact particle
-        dashParticleEnabled = getConfig().getBoolean("dash-particle-enabled", dashParticleEnabled);
-        String dashParticleName = getConfig().getString("dash-particle-type", dashParticle.name());
-        try {
-            dashParticle = Particle.valueOf(dashParticleName.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            getLogger().warning("Invalid dash-particle-type: " + dashParticleName + ", using CLOUD");
-            dashParticle = Particle.CLOUD;
-        }
-        dashParticleCount = getBoundedInt("dash-particle-count", dashParticleCount, 0, MAX_PARTICLE_COUNT);
-        dashParticleOffsetX = getBoundedDouble("dash-particle-offset-x", dashParticleOffsetX, 0.0, MAX_PARTICLE_OFFSET);
-        dashParticleOffsetY = getBoundedDouble("dash-particle-offset-y", dashParticleOffsetY, 0.0, MAX_PARTICLE_OFFSET);
-        dashParticleOffsetZ = getBoundedDouble("dash-particle-offset-z", dashParticleOffsetZ, 0.0, MAX_PARTICLE_OFFSET);
-        dashParticleSpeed = getBoundedDouble("dash-particle-speed", dashParticleSpeed, 0.0, MAX_PARTICLE_SPEED);
-
-        // Dash sound
-        dashSoundEnabled = getConfig().getBoolean("dash-sound-enabled", dashSoundEnabled);
-        String soundName = getConfig().getString("dash-sound-name", dashSound.name());
-        try {
-            dashSound = Sound.valueOf(soundName.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            getLogger().warning("Invalid dash-sound-name: " + soundName + ", using ENTITY_PHANTOM_FLAP");
-            dashSound = Sound.ENTITY_PHANTOM_FLAP;
-        }
-        dashSoundVolume = (float) getBoundedDouble("dash-sound-volume", dashSoundVolume, 0.0, 10.0);
-        dashSoundPitch = (float) getBoundedDouble("dash-sound-pitch", dashSoundPitch, 0.0, 2.0);
-
-        // Trail
-        trailEnabled = getConfig().getBoolean("trail-enabled", trailEnabled);
-        String trailName = getConfig().getString("trail-particle-type", trailParticle.name());
-        try {
-            trailParticle = Particle.valueOf(trailName.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            getLogger().warning("Invalid trail-particle-type: " + trailName + ", using CLOUD");
-            trailParticle = Particle.CLOUD;
-        }
-        trailParticleCount = getBoundedInt("trail-particle-count", trailParticleCount, 0, MAX_PARTICLE_COUNT);
-        trailOffsetX = getBoundedDouble("trail-offset-x", trailOffsetX, 0.0, MAX_PARTICLE_OFFSET);
-        trailOffsetY = getBoundedDouble("trail-offset-y", trailOffsetY, 0.0, MAX_PARTICLE_OFFSET);
-        trailOffsetZ = getBoundedDouble("trail-offset-z", trailOffsetZ, 0.0, MAX_PARTICLE_OFFSET);
-        trailSpeed = getBoundedDouble("trail-speed", trailSpeed, 0.0, MAX_PARTICLE_SPEED);
-        trailDurationTicks = getBoundedInt("trail-duration-ticks", trailDurationTicks, 0, MAX_TRAIL_DURATION_TICKS);
-        trailIntervalTicks = getBoundedInt("trail-interval-ticks", trailIntervalTicks, 1, MAX_TRAIL_INTERVAL_TICKS);
-
-        // Double dash
-        doubleDashEnabled = getConfig().getBoolean("double-dash.enabled", doubleDashEnabled);
-        doubleDashWindowMs = getBoundedLong("double-dash.window-ms", doubleDashWindowMs, 0, MAX_DOUBLE_DASH_WINDOW_MS);
-        doubleDashFallImmunityTicks = getBoundedInt("double-dash.fall-immunity-ticks", doubleDashFallImmunityTicks, 0, MAX_FALL_IMMUNITY_TICKS);
-
-        // Tear CustomModelData
-        tearCustomModelData = getBoundedInt("tear-custom-model-data", tearCustomModelData, 0, Integer.MAX_VALUE);
-
-        // Celestial Amulet
-        celestialAmuletEnabled = getConfig().getBoolean("celestial-amulet.enabled", celestialAmuletEnabled);
-        celestialAmuletRecipeEnabled = getConfig().getBoolean("celestial-amulet.recipe-enabled", celestialAmuletRecipeEnabled);
-        celestialAmuletUses = getBoundedInt("celestial-amulet.uses", celestialAmuletUses, 1, 64);
-        celestialAmuletCooldownMs = getBoundedLong("celestial-amulet.cooldown-seconds",
-                celestialAmuletCooldownMs / 1000L, 0, MAX_COOLDOWN_SECONDS) * 1000L;
-
-        // Drop blacklist worlds
-        List<String> blacklist = getConfig().getStringList("drop-blacklist-worlds");
-        dropBlacklistWorlds.clear();
-        for (String name : blacklist) {
-            if (name != null && !name.isEmpty()) {
-                dropBlacklistWorlds.add(name.toLowerCase());
-            }
-        }
-    }
-
-    private int getBoundedInt(String path, int fallback, int min, int max) {
-        int value = getConfig().getInt(path, fallback);
-        int bounded = ConfigValueValidator.clamp(value, min, max);
-        logClampedValue(path, value, bounded, min, max);
-        return bounded;
-    }
-
-    private long getBoundedLong(String path, long fallback, long min, long max) {
-        long value = getConfig().getLong(path, fallback);
-        long bounded = ConfigValueValidator.clamp(value, min, max);
-        logClampedValue(path, value, bounded, min, max);
-        return bounded;
-    }
-
-    private double getBoundedDouble(String path, double fallback, double min, double max) {
-        double value = getConfig().getDouble(path, fallback);
-        if (!Double.isFinite(value)) {
-            getLogger().warning("Invalid value for '" + path + "': " + value + ". Using " + fallback + ".");
-            return fallback;
-        }
-        double bounded = ConfigValueValidator.clamp(value, min, max);
-        logClampedValue(path, value, bounded, min, max);
-        return bounded;
-    }
-
-    private void logClampedValue(String path, Object value, Object bounded, Object min, Object max) {
-        if (!value.equals(bounded)) {
-            getLogger().warning("Value for '" + path + "' must be between " + min + " and " + max
-                    + ". Using " + bounded + ".");
-        }
+        settings = PluginSettings.load(getConfig(), getLogger(), settings);
+        warnAboutMissingV116Configuration();
     }
 
     public void refreshAmuletRecipe() {
-        CelestialAmulet.initialize(this, celestialAmuletUses);
+        initializeAmulet();
         registerAmuletRecipe();
+    }
+
+    private void initializeAmulet() {
+        PluginSettings.AmuletSettings amulet = settings.amulet();
+        CelestialAmulet.initialize(this, amulet.uses(), amulet.customModelData());
     }
 
     private void registerAmuletRecipe() {
         if (CelestialAmulet.getRecipeKey() == null) {
             return;
         }
+
         Bukkit.removeRecipe(CelestialAmulet.getRecipeKey());
-        if (!celestialAmuletRecipeEnabled) {
+        if (!settings.amulet().recipeEnabled()) {
             return;
         }
 
@@ -275,8 +106,6 @@ public class CelestialDash extends JavaPlugin {
         Bukkit.addRecipe(recipe);
     }
 
-    // Getters used by other classes
-
     public Messages getMessages() {
         return messages;
     }
@@ -285,144 +114,208 @@ public class CelestialDash extends JavaPlugin {
         return dashHandler;
     }
 
+    public ResourcePackHandler getResourcePackHandler() {
+        return resourcePackHandler;
+    }
+
+    public PluginSettings getSettings() {
+        return settings;
+    }
+
+    private void warnAboutMissingV116Configuration() {
+        if (!getConfig().isConfigurationSection("resource-pack")) {
+            getLogger().warning("Configuration is missing the 'resource-pack' section. "
+                    + "Resource-pack delivery is disabled until the v1.1.6 block is added.");
+        }
+        if (!getConfig().contains("tear-custom-model-data")) {
+            getLogger().warning("Configuration is missing 'tear-custom-model-data'. "
+                    + "Add the v1.1.6 value before enabling the bundled resource pack.");
+        }
+        if (!getConfig().contains("celestial-amulet.custom-model-data")) {
+            getLogger().warning("Configuration is missing 'celestial-amulet.custom-model-data'. "
+                    + "Add the v1.1.6 value before enabling the bundled resource pack.");
+        }
+    }
+
+    // Legacy configuration accessors retained for source and binary compatibility.
+
+    @Deprecated
     public double getDropChance() {
-        return dropChance;
+        return settings.drops().chance();
     }
 
+    @Deprecated
     public long getDropCooldownMs() {
-        return dropCooldownMs;
+        return settings.drops().cooldownMs();
     }
 
+    @Deprecated
     public long getDashCooldownMs() {
-        return dashCooldownMs;
+        return settings.dash().cooldownMs();
     }
 
+    @Deprecated
     public double getDashStrength() {
-        return dashStrength;
+        return settings.dash().strength();
     }
 
+    @Deprecated
     public double getDashLift() {
-        return dashLift;
+        return settings.dash().lift();
     }
 
+    @Deprecated
     public int getRegenDurationTicks() {
-        return regenDurationTicks;
+        return settings.dash().regenerationDurationTicks();
     }
 
+    @Deprecated
     public int getRegenAmplifier() {
-        return regenAmplifier;
+        return settings.dash().regenerationAmplifier();
     }
 
+    @Deprecated
     public boolean isDashParticleEnabled() {
-        return dashParticleEnabled;
+        return settings.dash().impactParticle().enabled();
     }
 
+    @Deprecated
     public Particle getDashParticle() {
-        return dashParticle;
+        return settings.dash().impactParticle().type();
     }
 
+    @Deprecated
     public int getDashParticleCount() {
-        return dashParticleCount;
+        return settings.dash().impactParticle().count();
     }
 
+    @Deprecated
     public double getDashParticleOffsetX() {
-        return dashParticleOffsetX;
+        return settings.dash().impactParticle().offsetX();
     }
 
+    @Deprecated
     public double getDashParticleOffsetY() {
-        return dashParticleOffsetY;
+        return settings.dash().impactParticle().offsetY();
     }
 
+    @Deprecated
     public double getDashParticleOffsetZ() {
-        return dashParticleOffsetZ;
+        return settings.dash().impactParticle().offsetZ();
     }
 
+    @Deprecated
     public double getDashParticleSpeed() {
-        return dashParticleSpeed;
+        return settings.dash().impactParticle().speed();
     }
 
+    @Deprecated
     public boolean isDashSoundEnabled() {
-        return dashSoundEnabled;
+        return settings.dash().sound().enabled();
     }
 
+    @Deprecated
     public Sound getDashSound() {
-        return dashSound;
+        return settings.dash().sound().sound();
     }
 
+    @Deprecated
     public float getDashSoundVolume() {
-        return dashSoundVolume;
+        return settings.dash().sound().volume();
     }
 
+    @Deprecated
     public float getDashSoundPitch() {
-        return dashSoundPitch;
+        return settings.dash().sound().pitch();
     }
 
+    @Deprecated
     public boolean isTrailEnabled() {
-        return trailEnabled;
+        return settings.dash().trail().enabled();
     }
 
+    @Deprecated
     public Particle getTrailParticle() {
-        return trailParticle;
+        return settings.dash().trail().particle();
     }
 
+    @Deprecated
     public int getTrailParticleCount() {
-        return trailParticleCount;
+        return settings.dash().trail().count();
     }
 
+    @Deprecated
     public double getTrailOffsetX() {
-        return trailOffsetX;
+        return settings.dash().trail().offsetX();
     }
 
+    @Deprecated
     public double getTrailOffsetY() {
-        return trailOffsetY;
+        return settings.dash().trail().offsetY();
     }
 
+    @Deprecated
     public double getTrailOffsetZ() {
-        return trailOffsetZ;
+        return settings.dash().trail().offsetZ();
     }
 
+    @Deprecated
     public double getTrailSpeed() {
-        return trailSpeed;
+        return settings.dash().trail().speed();
     }
 
+    @Deprecated
     public int getTrailDurationTicks() {
-        return trailDurationTicks;
+        return settings.dash().trail().durationTicks();
     }
 
+    @Deprecated
     public int getTrailIntervalTicks() {
-        return trailIntervalTicks;
+        return settings.dash().trail().intervalTicks();
     }
 
+    @Deprecated
     public boolean isDoubleDashEnabled() {
-        return doubleDashEnabled;
+        return settings.dash().doubleDash().enabled();
     }
 
+    @Deprecated
     public long getDoubleDashWindowMs() {
-        return doubleDashWindowMs;
+        return settings.dash().doubleDash().windowMs();
     }
 
+    @Deprecated
     public int getDoubleDashFallImmunityTicks() {
-        return doubleDashFallImmunityTicks;
+        return settings.dash().doubleDash().fallImmunityTicks();
     }
 
+    @Deprecated
     public int getTearCustomModelData() {
-        return tearCustomModelData;
+        return settings.tearCustomModelData();
     }
 
+    @Deprecated
+    public int getGiveMaxAmount() {
+        return settings.giveMaxAmount();
+    }
+
+    @Deprecated
     public boolean isCelestialAmuletEnabled() {
-        return celestialAmuletEnabled;
+        return settings.amulet().enabled();
     }
 
+    @Deprecated
     public int getCelestialAmuletUses() {
-        return celestialAmuletUses;
+        return settings.amulet().uses();
     }
 
+    @Deprecated
     public long getCelestialAmuletCooldownMs() {
-        return celestialAmuletCooldownMs;
+        return settings.amulet().cooldownMs();
     }
 
+    @Deprecated
     public boolean isWorldBlacklistedForDrops(String worldName) {
-        if (worldName == null) return false;
-        return dropBlacklistWorlds.contains(worldName.toLowerCase());
+        return settings.drops().isWorldBlacklisted(worldName);
     }
 }
