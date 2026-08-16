@@ -1,6 +1,6 @@
 name: CelestialDash
 main: com.minico.celestialdash.CelestialDash
-version: 1.1.6
+version: 1.1.7
 api-version: 1.20
 author: Minico
 description: Storm-powered dashes, Celestial Amulets, and an optional resource pack.
@@ -9,9 +9,11 @@ softdepend: [PlaceholderAPI]
 
 commands:
   celestialdash:
-    description: CelestialDash admin commands
+    description: CelestialDash commands
     usage: |
+      /celestialdash chronicle - Recover your Chronicle
       /celestialdash give <player> <amount> - Give Celestial Tears to a player
+      /celestialdash chronicle give <player> - Give a Chronicle copy to a player
       /celestialdash pack send <player> - Send the configured resource pack to a player
       /celestialdash reload - Reload the plugin configuration
     aliases: [cdash, celestial]
@@ -25,6 +27,7 @@ permissions:
       celestialdash.bypass-dash-blacklist: true
       celestialdash.receive: true
       celestialdash.amulet: true
+      celestialdash.chronicle: true
       celestialdash.admin: true
 
   celestialdash.use:
@@ -43,6 +46,10 @@ permissions:
     description: Allows using the Celestial Amulet
     default: true
 
+  celestialdash.chronicle:
+    description: Allows recovering The Falling Sky with /celestialdash chronicle
+    default: true
+
   celestialdash.admin:
-    description: Allows using admin commands (give, pack send, reload)
+    description: Allows using admin commands (give, chronicle give, pack send, reload)
     default: op

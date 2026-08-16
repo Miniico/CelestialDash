@@ -3,9 +3,7 @@ package com.minico.celestialdash;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -32,6 +30,10 @@ public class DropHandler implements Listener {
         task = new BukkitRunnable() {
             @Override
             public void run() {
+                long now = System.currentTimeMillis();
+                PluginSettings.DropSettings dropSettings = plugin.getSettings().drops();
+                cleanupExpiredCooldowns(now);
+
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (!player.hasPermission("celestialdash.receive")) {
                         continue;
@@ -40,7 +42,6 @@ public class DropHandler implements Listener {
                     World world = player.getWorld();
 
                     // Skip blacklisted worlds
-                    PluginSettings.DropSettings dropSettings = plugin.getSettings().drops();
                     if (dropSettings.isWorldBlacklisted(world.getName())) {
                         continue;
                     }
@@ -51,7 +52,6 @@ public class DropHandler implements Listener {
                     }
 
                     UUID uuid = player.getUniqueId();
-                    long now = System.currentTimeMillis();
                     long last = lastDrop.getOrDefault(uuid, 0L);
 
                     if (now - last < dropSettings.cooldownMs()) {
@@ -89,9 +89,18 @@ public class DropHandler implements Listener {
         lastDrop.clear();
     }
 
-    @EventHandler
-    @SuppressWarnings("unused")
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        lastDrop.remove(event.getPlayer().getUniqueId());
+    /**
+     * Removes only cooldowns that have already expired. Active cooldowns stay in
+     * memory across reconnects so leaving the server cannot bypass storm-drop limits.
+     *
+     * @param nowMs current time in milliseconds
+     */
+    void cleanupExpiredCooldowns(long nowMs) {
+        if (lastDrop.isEmpty()) {
+            return;
+        }
+
+        long cooldownMs = plugin.getSettings().drops().cooldownMs();
+        lastDrop.entrySet().removeIf(entry -> nowMs - entry.getValue() >= cooldownMs);
     }
 }

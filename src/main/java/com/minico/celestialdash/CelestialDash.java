@@ -1,6 +1,7 @@
 package com.minico.celestialdash;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.command.PluginCommand;
@@ -17,6 +18,7 @@ public class CelestialDash extends JavaPlugin {
     private DropHandler dropHandler;
     private AmuletHandler amuletHandler;
     private ResourcePackHandler resourcePackHandler;
+    private ChronicleHandler chronicleHandler;
 
     @Override
     public void onEnable() {
@@ -33,16 +35,18 @@ public class CelestialDash extends JavaPlugin {
         dropHandler = new DropHandler(this);
         amuletHandler = new AmuletHandler(this, messages);
         resourcePackHandler = new ResourcePackHandler(this);
+        chronicleHandler = new ChronicleHandler(this);
 
         Bukkit.getPluginManager().registerEvents(dashHandler, this);
         Bukkit.getPluginManager().registerEvents(dropHandler, this);
         Bukkit.getPluginManager().registerEvents(amuletHandler, this);
         Bukkit.getPluginManager().registerEvents(resourcePackHandler, this);
+        Bukkit.getPluginManager().registerEvents(chronicleHandler, this);
         registerAmuletRecipe();
 
         PluginCommand command = getCommand("celestialdash");
         if (command != null) {
-            command.setExecutor(new CelestialCommand(this, messages));
+            command.setExecutor(new CelestialCommand(this, messages, chronicleHandler));
             command.setTabCompleter(new CelestialTabCompleter());
         } else {
             getLogger().severe("Command 'celestialdash' is not defined in plugin.yml!");
@@ -54,6 +58,8 @@ public class CelestialDash extends JavaPlugin {
         }
 
         dropHandler.start();
+        amuletHandler.start();
+        chronicleHandler.start();
         getLogger().info("CelestialDash enabled.");
     }
 
@@ -70,6 +76,9 @@ public class CelestialDash extends JavaPlugin {
         }
         if (resourcePackHandler != null) {
             resourcePackHandler.stop();
+        }
+        if (chronicleHandler != null) {
+            chronicleHandler.stop();
         }
         getLogger().info("CelestialDash disabled.");
     }
@@ -101,8 +110,9 @@ public class CelestialDash extends JavaPlugin {
 
         ShapedRecipe recipe = new ShapedRecipe(CelestialAmulet.getRecipeKey(), CelestialAmulet.create());
         recipe.shape(" T ", "TGT", " T ");
-        recipe.setIngredient('T', new RecipeChoice.ExactChoice(TearUtils.createCelestialTear()));
-        recipe.setIngredient('G', org.bukkit.Material.NETHERITE_INGOT);
+        // PDC validation runs in AmuletHandler so Tears remain usable after a visual model change.
+        recipe.setIngredient('T', new RecipeChoice.MaterialChoice(Material.GHAST_TEAR));
+        recipe.setIngredient('G', Material.NETHERITE_INGOT);
         Bukkit.addRecipe(recipe);
     }
 
@@ -114,8 +124,20 @@ public class CelestialDash extends JavaPlugin {
         return dashHandler;
     }
 
+    DropHandler getDropHandler() {
+        return dropHandler;
+    }
+
+    AmuletHandler getAmuletHandler() {
+        return amuletHandler;
+    }
+
     public ResourcePackHandler getResourcePackHandler() {
         return resourcePackHandler;
+    }
+
+    ChronicleHandler getChronicleHandler() {
+        return chronicleHandler;
     }
 
     public PluginSettings getSettings() {

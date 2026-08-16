@@ -27,18 +27,18 @@ public final class TearUtils {
     }
 
     /**
-     * CustomModelData value used for Celestial Tears.
+     * CustomModelData value applied to newly created Celestial Tears.
      * <p>
-     * 0 means "disabled": no CustomModelData check will be applied.
+     * 0 means "disabled": newly created Tears receive no CustomModelData.
      */
     private static int customModelData = 0;
     private static NamespacedKey celestialTearKey;
 
     /**
-     * Initializes the item marker and CustomModelData used for Celestial Tears.
+     * Initializes the item marker and visual CustomModelData used for new Celestial Tears.
      * Called after the plugin settings are loaded and after a configuration reload.
      *
-     * @param data CustomModelData value (0 disables the check)
+     * @param data CustomModelData value for new Tears (0 omits it)
      */
     public static void initialize(JavaPlugin plugin, int data) {
         celestialTearKey = new NamespacedKey(plugin, "celestial_tear");
@@ -102,10 +102,13 @@ public final class TearUtils {
      * Checks whether an ItemStack is considered a Celestial Tear.
      * This method is intentionally strict so we don't accidentally match
      * unrelated ghast tears from other plugins.
-     * Conditions:
+     * <p>The persistent marker is the item's identity. CustomModelData is visual
+     * metadata only, so Tears created before a model-data configuration change
+     * remain valid.</p>
+     *
+     * <p>Conditions:
      *  - Material must be GHAST_TEAR
      *  - Must contain this plugin's PersistentDataContainer marker
-     *  - If CustomModelData is enabled (>0), item must have the same value
      *
      * @param item ItemStack to inspect
      * @return true if the stack is a Celestial Tear
@@ -126,20 +129,7 @@ public final class TearUtils {
 
         PersistentDataContainer data = meta.getPersistentDataContainer();
         Byte marker = data.get(tearKey, PersistentDataType.BYTE);
-        if (marker == null || marker != (byte) 1) {
-            return false;
-        }
-
-        // Optional CustomModelData check for resource packs.
-        if (customModelData > 0) {
-            if (!meta.hasCustomModelData()) {
-                return false;
-            }
-            return meta.getCustomModelData() == customModelData;
-        }
-
-        // No CustomModelData requirement -> the persistent marker is enough.
-        return true;
+        return Byte.valueOf((byte) 1).equals(marker);
     }
 
     /**
@@ -183,23 +173,37 @@ public final class TearUtils {
     }
 
     /**
-     * Consumes one Celestial Tear from a given slot, if it still contains a valid tear.
-     * <p>
-     * If the amount reaches 0, the slot is cleared (set to null).
+     * Consumes one Celestial Tear from a given slot, if it still contains a valid Tear.
+     *
+     * <p>Retained for source and binary compatibility. New callers that need to
+     * know whether the cost was paid should use {@link #tryConsumeTear(Player, int)}.</p>
      *
      * @param player player whose inventory will be modified
-     * @param slot   inventory index to consume from
+     * @param slot inventory index to consume from
      */
+    @SuppressWarnings("unused") // Public compatibility method for external integrations.
     public static void consumeTear(Player player, int slot) {
+        tryConsumeTear(player, slot);
+    }
+
+    /**
+     * Consumes one Celestial Tear from a given slot when it still contains a valid Tear.
+     * If the amount reaches 0, the slot is cleared.
+     *
+     * @param player player whose inventory will be modified
+     * @param slot inventory index to consume from
+     * @return {@code true} when one Tear was consumed
+     */
+    public static boolean tryConsumeTear(Player player, int slot) {
         PlayerInventory inv = player.getInventory();
         if (slot < 0 || slot >= inv.getSize()) {
-            return;
+            return false;
         }
 
         ItemStack item = inv.getItem(slot);
         if (!isCelestialTear(item)) {
             // Slot was modified or no longer contains a Celestial Tear.
-            return;
+            return false;
         }
 
         int newAmount = item.getAmount() - 1;
@@ -209,5 +213,6 @@ public final class TearUtils {
             item.setAmount(newAmount);
             inv.setItem(slot, item);
         }
+        return true;
     }
 }

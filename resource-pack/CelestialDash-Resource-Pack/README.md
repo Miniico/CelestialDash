@@ -25,6 +25,6 @@ This optional pack gives Celestial Tears and Celestial Amulets custom 32x32 pixe
 ## Notes
 
 - The resource pack only changes appearance; it cannot create plugin items or read their Persistent Data Container markers.
-- Tears created with another `tear-custom-model-data` value are not valid after changing the value. Reissue them after switching to `22001`.
+- Tears created with another `tear-custom-model-data` value remain valid after changing the value. Their appearance is not changed retroactively.
 - Existing Amulets stay functional but keep the vanilla shell appearance until they are recreated with `22002`.
 - `22001` and `22002` are reserved by this pack. If another pack replaces these vanilla item-model files, combine its model rules with this pack instead of changing pack order blindly.

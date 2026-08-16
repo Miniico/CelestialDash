@@ -13,7 +13,9 @@ import java.util.Map;
 /**
  * Main command executor for /celestialdash
  * Subcommands:
+ *   /celestialdash chronicle
  *   /celestialdash give <player> <amount>
+ *   /celestialdash chronicle give <player>
  *   /celestialdash pack send <player>
  *   /celestialdash reload
  */
@@ -21,10 +23,12 @@ public class CelestialCommand implements CommandExecutor {
 
     private final CelestialDash plugin;
     private final Messages messages;
+    private final ChronicleHandler chronicleHandler;
 
-    public CelestialCommand(CelestialDash plugin, Messages messages) {
+    public CelestialCommand(CelestialDash plugin, Messages messages, ChronicleHandler chronicleHandler) {
         this.plugin = plugin;
         this.messages = messages;
+        this.chronicleHandler = chronicleHandler;
     }
 
     @Override
@@ -32,6 +36,24 @@ public class CelestialCommand implements CommandExecutor {
                              @NotNull Command command,
                              @NotNull String label,
                              @NotNull String[] args) {
+
+        // /celestialdash chronicle
+        if (args.length == 1 && args[0].equalsIgnoreCase("chronicle")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(messages.getChroniclePlayerOnlyMessage());
+                return true;
+            }
+            if (!player.hasPermission("celestialdash.chronicle")) {
+                player.sendMessage(messages.getNoChroniclePermissionMessage());
+                return true;
+            }
+
+            long remainingSeconds = chronicleHandler.reissueToSelf(player);
+            if (remainingSeconds > 0L) {
+                player.sendMessage(messages.formatChronicleReissueCooldown(remainingSeconds));
+            }
+            return true;
+        }
 
         if (!sender.hasPermission("celestialdash.admin")) {
             sender.sendMessage(messages.getNoAdminPermissionMessage());
@@ -68,6 +90,22 @@ public class CelestialCommand implements CommandExecutor {
             return true;
         }
 
+        // /celestialdash chronicle give <player>
+        if (args.length == 3 && args[0].equalsIgnoreCase("chronicle") && args[1].equalsIgnoreCase("give")) {
+            Player target = Bukkit.getPlayer(args[2]);
+            if (target == null) {
+                sender.sendMessage(messages.formatPlayerNotFound(args[2]));
+                return true;
+            }
+
+            boolean overflowDropped = chronicleHandler.deliverChronicle(target);
+            sender.sendMessage(messages.formatChronicleGiven(target.getName()));
+            if (overflowDropped) {
+                sender.sendMessage(messages.formatChronicleOverflow(target.getName()));
+            }
+            return true;
+        }
+
         // /celestialdash give <player> <amount>
         if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
 
@@ -99,8 +137,10 @@ public class CelestialCommand implements CommandExecutor {
         }
 
         sender.sendMessage(messages.getUsageHeaderMessage());
+        sender.sendMessage(messages.formatUsageChronicle(label));
         sender.sendMessage(messages.formatUsageReload(label));
         sender.sendMessage(messages.formatUsageGive(label));
+        sender.sendMessage(messages.formatUsageChronicleGive(label));
         sender.sendMessage(messages.formatUsagePackSend(label));
         return true;
     }

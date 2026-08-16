@@ -43,6 +43,20 @@ class PluginSettingsTest {
     }
 
     @Test
+    void loadsAndBoundsThePlaceholderTearCacheCapacity() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("placeholder-tear-cache-max-entries", 4_096);
+
+        assertEquals(4_096, PluginSettings.load(config, LOGGER, null).placeholders().tearCacheMaxEntries());
+
+        config.set("placeholder-tear-cache-max-entries", 50_000);
+        assertEquals(10_000, PluginSettings.load(config, LOGGER, null).placeholders().tearCacheMaxEntries());
+
+        config.set("placeholder-tear-cache-max-entries", 0);
+        assertEquals(1, PluginSettings.load(config, LOGGER, null).placeholders().tearCacheMaxEntries());
+    }
+
+    @Test
     void keepsPreviousScalarValuesButClearsAMissingWorldBlacklistOnReload() {
         YamlConfiguration config = new YamlConfiguration();
         config.set("dash-cooldown-seconds", 30);
@@ -91,6 +105,7 @@ class PluginSettingsTest {
         config.set("dash-particle-type", "FLAME");
         config.set("dash-sound-name", "BLOCK_NOTE_BLOCK_HARP");
         PluginSettings initial = PluginSettings.load(config, LOGGER, null);
+        assertEquals(Particle.FLAME, initial.dash().impactParticle().type());
 
         config.set("dash-particle-type", "not-a-particle");
         config.set("dash-sound-name", "not-a-sound");
@@ -98,6 +113,48 @@ class PluginSettingsTest {
 
         assertEquals(Particle.CLOUD, reloaded.dash().impactParticle().type());
         assertEquals(Sound.ENTITY_PHANTOM_FLAP, reloaded.dash().sound().sound());
+    }
+
+    @Test
+    void fallsBackToCloudForParticlesThatRequireAdditionalData() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("dash-particle-type", "REDSTONE");
+        config.set("trail-particle-type", "BLOCK_CRACK");
+        WarningCapturingHandler handler = new WarningCapturingHandler();
+        Logger logger = Logger.getLogger(PluginSettingsTest.class.getName() + ".particle-data-" + System.nanoTime());
+        logger.setUseParentHandlers(false);
+        logger.addHandler(handler);
+
+        PluginSettings settings;
+        try {
+            settings = PluginSettings.load(config, logger, null);
+        } finally {
+            logger.removeHandler(handler);
+        }
+
+        assertEquals(Particle.CLOUD, settings.dash().impactParticle().type());
+        assertEquals(Particle.CLOUD, settings.dash().trail().particle());
+        assertTrue(handler.messages().stream().anyMatch(message -> message.contains("dash-particle-type")
+                && message.contains("REDSTONE")));
+        assertTrue(handler.messages().stream().anyMatch(message -> message.contains("trail-particle-type")
+                && message.contains("BLOCK_CRACK")));
+    }
+
+    @Test
+    void capsAPathologicalTrailConfigurationWithoutChangingTheDefaultTrail() {
+        PluginSettings defaults = PluginSettings.load(new YamlConfiguration(), LOGGER, null);
+        assertEquals(20, defaults.dash().trail().count());
+        assertEquals(10, defaults.dash().trail().durationTicks());
+        assertEquals(1, defaults.dash().trail().intervalTicks());
+
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("trail-particle-count", 500);
+        config.set("trail-duration-ticks", 1_200);
+        config.set("trail-interval-ticks", 1);
+
+        PluginSettings settings = PluginSettings.load(config, LOGGER, null);
+
+        assertEquals(4, settings.dash().trail().count());
     }
 
     @Test
@@ -121,6 +178,38 @@ class PluginSettingsTest {
         PluginSettings reloaded = PluginSettings.load(config, LOGGER, initial);
 
         assertFalse(reloaded.resourcePack().enabled());
+    }
+
+    @Test
+    void enablesTheChronicleByDefaultAndKeepsAnExplicitDisableOnReload() {
+        YamlConfiguration config = new YamlConfiguration();
+        assertTrue(PluginSettings.load(config, LOGGER, null).chronicle().enabled());
+
+        config.set("chronicle.enabled", false);
+        PluginSettings disabled = PluginSettings.load(config, LOGGER, null);
+        assertFalse(disabled.chronicle().enabled());
+
+        config.set("chronicle", null);
+        PluginSettings reloaded = PluginSettings.load(config, LOGGER, disabled);
+        assertFalse(reloaded.chronicle().enabled());
+    }
+
+    @Test
+    void loadsChronicleDeliveryAndRecoverySettings() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("chronicle.notification-enabled", false);
+        config.set("chronicle.delivery-sound-enabled", false);
+        config.set("chronicle.self-reissue-cooldown-seconds", 120);
+
+        PluginSettings settings = PluginSettings.load(config, LOGGER, null);
+
+        assertFalse(settings.chronicle().notificationEnabled());
+        assertFalse(settings.chronicle().deliverySoundEnabled());
+        assertEquals(120_000L, settings.chronicle().selfReissueCooldownMs());
+
+        config.set("chronicle.self-reissue-cooldown-seconds", 100_000);
+        assertEquals(86_400_000L,
+                PluginSettings.load(config, LOGGER, settings).chronicle().selfReissueCooldownMs());
     }
 
     @Test

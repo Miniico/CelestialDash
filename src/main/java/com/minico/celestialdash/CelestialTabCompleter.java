@@ -17,16 +17,27 @@ public class CelestialTabCompleter implements TabCompleter {
                                       @NotNull Command command,
                                       @NotNull String alias,
                                       @NotNull String[] args) {
+        if (args.length == 1
+                && sender.hasPermission("celestialdash.chronicle")
+                && startsWith("chronicle", args[0])) {
+            if (!sender.hasPermission("celestialdash.admin")) {
+                return List.of("chronicle");
+            }
+        }
         if (!sender.hasPermission("celestialdash.admin")) {
             return List.of();
         }
 
         if (args.length == 1) {
-            return complete(args[0], List.of("give", "reload", "pack"));
+            return complete(args[0], List.of("give", "chronicle", "reload", "pack"));
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
             return completeOnlinePlayerNames(args[1]);
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("chronicle")) {
+            return complete(args[1], List.of("give"));
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("pack")) {
@@ -34,6 +45,10 @@ public class CelestialTabCompleter implements TabCompleter {
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("pack") && args[1].equalsIgnoreCase("send")) {
+            return completeOnlinePlayerNames(args[2]);
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("chronicle") && args[1].equalsIgnoreCase("give")) {
             return completeOnlinePlayerNames(args[2]);
         }
 

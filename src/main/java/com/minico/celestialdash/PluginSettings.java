@@ -24,12 +24,15 @@ public final class PluginSettings {
     private static final long MAX_DOUBLE_DASH_WINDOW_MS = 60_000L;
     private static final int MAX_REGEN_DURATION_SECONDS = 3_600;
     private static final int MAX_PARTICLE_COUNT = 500;
+    private static final int MAX_TRAIL_PARTICLES_PER_DASH = 5_000;
     private static final double MAX_PARTICLE_OFFSET = 10.0;
     private static final double MAX_PARTICLE_SPEED = 10.0;
     private static final int MAX_TRAIL_DURATION_TICKS = 1_200;
     private static final int MAX_TRAIL_INTERVAL_TICKS = 200;
     private static final int MAX_FALL_IMMUNITY_TICKS = 1_200;
     private static final int MAX_GIVE_AMOUNT = 2_304;
+    private static final int DEFAULT_TEAR_CACHE_MAX_ENTRIES = 256;
+    private static final int MAX_TEAR_CACHE_ENTRIES = 10_000;
     private static final String DEFAULT_RESOURCE_PACK_URL = "https://your-domain/CelestialDash-Resource-Pack.zip";
     private static final String DEFAULT_RESOURCE_PACK_PROMPT = "&bThis server uses the CelestialDash resource pack.";
     private static final String AMULET_PURIFIABLE_EFFECTS_PATH = "celestial-amulet.purifiable-effects";
@@ -52,19 +55,25 @@ public final class PluginSettings {
     private final int giveMaxAmount;
     private final AmuletSettings amulet;
     private final ResourcePackSettings resourcePack;
+    private final ChronicleSettings chronicle;
+    private final PlaceholderSettings placeholders;
 
     private PluginSettings(DropSettings drops,
                            DashSettings dash,
                            int tearCustomModelData,
                            int giveMaxAmount,
                            AmuletSettings amulet,
-                           ResourcePackSettings resourcePack) {
+                           ResourcePackSettings resourcePack,
+                           ChronicleSettings chronicle,
+                           PlaceholderSettings placeholders) {
         this.drops = drops;
         this.dash = dash;
         this.tearCustomModelData = tearCustomModelData;
         this.giveMaxAmount = giveMaxAmount;
         this.amulet = amulet;
         this.resourcePack = resourcePack;
+        this.chronicle = chronicle;
+        this.placeholders = placeholders;
     }
 
     public static PluginSettings defaults() {
@@ -91,7 +100,9 @@ public final class PluginSettings {
                         "",
                         false,
                         DEFAULT_RESOURCE_PACK_PROMPT
-                )
+                ),
+                new ChronicleSettings(true, true, true, 300_000L),
+                new PlaceholderSettings(DEFAULT_TEAR_CACHE_MAX_ENTRIES)
         );
     }
 
@@ -118,6 +129,13 @@ public final class PluginSettings {
                 loadBlacklistedWorlds(config, "drop-blacklist-worlds"),
                 getDropDeliveryMode(config, logger)
         );
+
+        int trailDurationTicks = getBoundedInt(config, logger, "trail-duration-ticks", previousTrail.durationTicks(),
+                0, MAX_TRAIL_DURATION_TICKS);
+        int trailIntervalTicks = getBoundedInt(config, logger, "trail-interval-ticks", previousTrail.intervalTicks(),
+                1, MAX_TRAIL_INTERVAL_TICKS);
+        int trailParticleCount = getBoundedTrailParticleCount(config, logger, previousTrail.count(),
+                trailDurationTicks, trailIntervalTicks);
 
         DashSettings dash = new DashSettings(
                 getBoundedLong(config, logger, "dash-cooldown-seconds", previousDash.cooldownMs() / 1_000L,
@@ -150,16 +168,13 @@ public final class PluginSettings {
                 new TrailSettings(
                         config.getBoolean("trail-enabled", previousTrail.enabled()),
                         getParticle(config, logger, "trail-particle-type", previousTrail.particle()),
-                        getBoundedInt(config, logger, "trail-particle-count", previousTrail.count(),
-                                0, MAX_PARTICLE_COUNT),
+                        trailParticleCount,
                         getBoundedDouble(config, logger, "trail-offset-x", previousTrail.offsetX(), MAX_PARTICLE_OFFSET),
                         getBoundedDouble(config, logger, "trail-offset-y", previousTrail.offsetY(), MAX_PARTICLE_OFFSET),
                         getBoundedDouble(config, logger, "trail-offset-z", previousTrail.offsetZ(), MAX_PARTICLE_OFFSET),
                         getBoundedDouble(config, logger, "trail-speed", previousTrail.speed(), MAX_PARTICLE_SPEED),
-                        getBoundedInt(config, logger, "trail-duration-ticks", previousTrail.durationTicks(),
-                                0, MAX_TRAIL_DURATION_TICKS),
-                        getBoundedInt(config, logger, "trail-interval-ticks", previousTrail.intervalTicks(),
-                                1, MAX_TRAIL_INTERVAL_TICKS)
+                        trailDurationTicks,
+                        trailIntervalTicks
                 ),
                 new DoubleDashSettings(
                         config.getBoolean("double-dash.enabled", previousDoubleDash.enabled()),
@@ -196,8 +211,20 @@ public final class PluginSettings {
                 config.getBoolean("resource-pack.required", false),
                 getString(config, "resource-pack.prompt", DEFAULT_RESOURCE_PACK_PROMPT)
         );
+        ChronicleSettings chronicle = new ChronicleSettings(
+                config.getBoolean("chronicle.enabled", fallback.chronicle.enabled()),
+                config.getBoolean("chronicle.notification-enabled", fallback.chronicle.notificationEnabled()),
+                config.getBoolean("chronicle.delivery-sound-enabled", fallback.chronicle.deliverySoundEnabled()),
+                getBoundedLong(config, logger, "chronicle.self-reissue-cooldown-seconds",
+                        fallback.chronicle.selfReissueCooldownMs() / 1_000L, MAX_COOLDOWN_SECONDS) * 1_000L
+        );
+        PlaceholderSettings placeholders = new PlaceholderSettings(
+                getBoundedInt(config, logger, "placeholder-tear-cache-max-entries",
+                        fallback.placeholders.tearCacheMaxEntries(), 1, MAX_TEAR_CACHE_ENTRIES)
+        );
 
-        return new PluginSettings(drops, dash, tearCustomModelData, giveMaxAmount, amulet, resourcePack);
+        return new PluginSettings(drops, dash, tearCustomModelData, giveMaxAmount, amulet, resourcePack, chronicle,
+                placeholders);
     }
 
     public DropSettings drops() {
@@ -222,6 +249,14 @@ public final class PluginSettings {
 
     public ResourcePackSettings resourcePack() {
         return resourcePack;
+    }
+
+    public ChronicleSettings chronicle() {
+        return chronicle;
+    }
+
+    public PlaceholderSettings placeholders() {
+        return placeholders;
     }
 
     private static String getString(FileConfiguration config, String path, String fallback) {
@@ -301,6 +336,35 @@ public final class PluginSettings {
         return bounded;
     }
 
+    private static int getBoundedTrailParticleCount(FileConfiguration config,
+                                                    Logger logger,
+                                                    int fallback,
+                                                    int durationTicks,
+                                                    int intervalTicks) {
+        int requestedCount = getBoundedInt(config, logger, "trail-particle-count", fallback, 0, MAX_PARTICLE_COUNT);
+        int emissions = calculateTrailEmissions(durationTicks, intervalTicks);
+        if (requestedCount == 0 || emissions == 0) {
+            return requestedCount;
+        }
+
+        int maximumCount = MAX_TRAIL_PARTICLES_PER_DASH / emissions;
+        int boundedCount = Math.min(requestedCount, maximumCount);
+        if (boundedCount != requestedCount) {
+            long requestedTotal = (long) requestedCount * emissions;
+            logger.warning("Trail configuration would emit " + requestedTotal + " particles per dash. "
+                    + "Limiting 'trail-particle-count' to " + boundedCount + " so each trail emits at most "
+                    + MAX_TRAIL_PARTICLES_PER_DASH + " particles.");
+        }
+        return boundedCount;
+    }
+
+    private static int calculateTrailEmissions(int durationTicks, int intervalTicks) {
+        if (durationTicks <= 0 || intervalTicks <= 0) {
+            return 0;
+        }
+        return ((durationTicks - 1) / intervalTicks) + 1;
+    }
+
     private static long getBoundedLong(FileConfiguration config,
                                        Logger logger,
                                        String path,
@@ -333,7 +397,13 @@ public final class PluginSettings {
                                         Particle fallback) {
         String value = config.getString(path, fallback.name());
         try {
-            return Particle.valueOf(value.toUpperCase(Locale.ROOT));
+            Particle particle = Particle.valueOf(value.toUpperCase(Locale.ROOT));
+            if (particle.getDataType() != Void.class) {
+                logger.warning("Particle for '" + path + "': " + value
+                        + " requires additional data. Using CLOUD.");
+                return Particle.CLOUD;
+            }
+            return particle;
         } catch (IllegalArgumentException exception) {
             logger.warning("Invalid " + path + ": " + value + ", using CLOUD");
             return Particle.CLOUD;
@@ -455,5 +525,14 @@ public final class PluginSettings {
             sha1 = sha1 == null ? "" : sha1.trim();
             prompt = prompt == null ? "" : prompt;
         }
+    }
+
+    public record ChronicleSettings(boolean enabled,
+                                    boolean notificationEnabled,
+                                    boolean deliverySoundEnabled,
+                                    long selfReissueCooldownMs) {
+    }
+
+    public record PlaceholderSettings(int tearCacheMaxEntries) {
     }
 }

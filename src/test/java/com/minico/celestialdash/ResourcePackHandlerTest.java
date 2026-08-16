@@ -7,6 +7,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -53,7 +55,10 @@ class ResourcePackHandlerTest {
 
     @Test
     void doesNotSendADisabledOrInvalidlyConfiguredPack() {
-        PlayerMock player = MockBukkit.getMock().addPlayer();
+        PlayerMock player = Objects.requireNonNull(
+                MockBukkit.getMock(),
+                "MockBukkit server must be initialized before adding a player"
+        ).addPlayer();
 
         assertEquals(ResourcePackHandler.SendResult.DISABLED, plugin.getResourcePackHandler().sendTo(player));
 

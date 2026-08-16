@@ -4,8 +4,10 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -49,15 +51,23 @@ public class DashHandler implements Listener {
         }.runTaskTimer(plugin, 20L, 20L);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     @SuppressWarnings({"unused", "deprecation"})
     public void onPlayerUseTear(PlayerInteractEvent event) {
+        if (InteractionUtils.isDeniedByAnotherListener(event)) {
+            return;
+        }
+
         if (event.getHand() != EquipmentSlot.HAND) {
             return;
         }
 
         Action action = event.getAction();
         if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        if (InteractionUtils.isRightClickOnInteractableBlock(event)) {
             return;
         }
 
@@ -136,8 +146,18 @@ public class DashHandler implements Listener {
             return;
         }
 
-        // Consume 1 tear
-        TearUtils.consumeTear(player, slot);
+        // Consume the tear before applying its movement effect. A slot changed by
+        // another listener must not grant a dash without paying its cost.
+        if (!TearUtils.tryConsumeTear(player, slot)) {
+            player.spigot().sendMessage(
+                    ChatMessageType.ACTION_BAR,
+                    TextComponent.fromLegacyText(messages.getNoTearsMessage())
+            );
+            return;
+        }
+
+        // The dash now owns this right-click, so the vanilla block interaction must not run.
+        event.setCancelled(true);
 
         if (isSecondDash) {
             // Second dash: stronger + fall-damage immunity
@@ -204,17 +224,28 @@ public class DashHandler implements Listener {
     }
 
     private void cleanupExpiredState() {
-        long now = System.currentTimeMillis();
-        long cooldown = plugin.getSettings().dash().cooldownMs();
+        if (lastDash.isEmpty() && comboWindowEnd.isEmpty() && fallImmunityUntil.isEmpty()) {
+            return;
+        }
 
-        lastDash.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
-        comboWindowEnd.entrySet().removeIf(entry -> now > entry.getValue());
-        fallImmunityUntil.entrySet().removeIf(entry -> now > entry.getValue());
+        long now = System.currentTimeMillis();
+        if (!lastDash.isEmpty()) {
+            long cooldown = plugin.getSettings().dash().cooldownMs();
+            lastDash.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
+        }
+        if (!comboWindowEnd.isEmpty()) {
+            comboWindowEnd.entrySet().removeIf(entry -> now > entry.getValue());
+        }
+        if (!fallImmunityUntil.isEmpty()) {
+            fallImmunityUntil.entrySet().removeIf(entry -> now > entry.getValue());
+        }
     }
 
     private void performDash(Player player, boolean secondDash) {
         // Direction and base strength
-        Vector dir = player.getLocation().getDirection().normalize();
+        Location dashLocation = player.getLocation();
+        World world = player.getWorld();
+        Vector dir = dashLocation.getDirection().normalize();
 
         PluginSettings.DashSettings dashSettings = plugin.getSettings().dash();
         double strength = dashSettings.strength();
@@ -244,10 +275,10 @@ public class DashHandler implements Listener {
 
         // Impact particle
         PluginSettings.ParticleSettings impactParticle = dashSettings.impactParticle();
-        if (impactParticle.enabled()) {
-            player.getWorld().spawnParticle(
+        if (impactParticle.enabled() && impactParticle.count() > 0) {
+            world.spawnParticle(
                     impactParticle.type(),
-                    player.getLocation(),
+                    dashLocation,
                     impactParticle.count(),
                     impactParticle.offsetX(),
                     impactParticle.offsetY(),
@@ -259,8 +290,8 @@ public class DashHandler implements Listener {
         // Sound
         PluginSettings.SoundSettings sound = dashSettings.sound();
         if (sound.enabled()) {
-            player.getWorld().playSound(
-                    player.getLocation(),
+            world.playSound(
+                    dashLocation,
                     sound.sound(),
                     sound.volume(),
                     sound.pitch()
@@ -301,18 +332,20 @@ public class DashHandler implements Listener {
                     return;
                 }
 
-                Location back = currentPlayer.getLocation().clone()
-                        .subtract(currentPlayer.getLocation().getDirection().normalize().multiply(0.5));
+                if (activeTrailSettings.count() > 0) {
+                    Location back = currentPlayer.getLocation();
+                    back.subtract(back.getDirection().normalize().multiply(0.5));
 
-                currentPlayer.getWorld().spawnParticle(
-                        activeTrailSettings.particle(),
-                        back,
-                        activeTrailSettings.count(),
-                        activeTrailSettings.offsetX(),
-                        activeTrailSettings.offsetY(),
-                        activeTrailSettings.offsetZ(),
-                        activeTrailSettings.speed()
-                );
+                    currentPlayer.getWorld().spawnParticle(
+                            activeTrailSettings.particle(),
+                            back,
+                            activeTrailSettings.count(),
+                            activeTrailSettings.offsetX(),
+                            activeTrailSettings.offsetY(),
+                            activeTrailSettings.offsetZ(),
+                            activeTrailSettings.speed()
+                    );
+                }
 
                 ticks += activeTrailSettings.intervalTicks();
             }

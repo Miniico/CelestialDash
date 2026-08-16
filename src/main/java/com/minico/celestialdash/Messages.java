@@ -21,13 +21,20 @@ public class Messages {
     private String invalidAmountMessage;
     private String giveSuccessTemplate;
     private String giveOverflowTemplate;
+    private String chronicleGivenTemplate;
+    private String chronicleOverflowTemplate;
+    private String noChroniclePermissionMessage;
+    private String chroniclePlayerOnlyMessage;
+    private String chronicleReissueCooldownTemplate;
     private String resourcePackSentTemplate;
     private String resourcePackDisabledMessage;
     private String resourcePackInvalidConfigurationMessage;
     private String resourcePackSendFailedMessage;
     private String usageHeaderMessage;
+    private String usageChronicleTemplate;
     private String usageReloadTemplate;
     private String usageGiveTemplate;
+    private String usageChronicleGiveTemplate;
     private String usagePackSendTemplate;
     private String amuletDisabledMessage;
     private String amuletNoEffectsMessage;
@@ -110,6 +117,31 @@ public class Messages {
                 "&eThe inventory was full; the remaining Tears were dropped at %player%'s location."
         ));
 
+        chronicleGivenTemplate = color(plugin.getConfig().getString(
+                "messages.chronicle-given",
+                "&bGave The Falling Sky to %player%."
+        ));
+
+        chronicleOverflowTemplate = color(plugin.getConfig().getString(
+                "messages.chronicle-overflow",
+                "&eThe inventory was full; the Chronicle was dropped at %player%'s location."
+        ));
+
+        noChroniclePermissionMessage = color(plugin.getConfig().getString(
+                "messages.no-chronicle-permission",
+                "&cYou don't have permission to recover The Falling Sky."
+        ));
+
+        chroniclePlayerOnlyMessage = color(plugin.getConfig().getString(
+                "messages.chronicle-player-only",
+                "&cOnly players can recover The Falling Sky."
+        ));
+
+        chronicleReissueCooldownTemplate = color(plugin.getConfig().getString(
+                "messages.chronicle-reissue-cooldown",
+                "&7You can recover another Chronicle in &b%seconds%s&7."
+        ));
+
         resourcePackSentTemplate = color(plugin.getConfig().getString(
                 "messages.resource-pack-sent",
                 "&aThe resource-pack request was sent to %player%."
@@ -135,6 +167,11 @@ public class Messages {
                 "&eUsage:"
         ));
 
+        usageChronicleTemplate = color(plugin.getConfig().getString(
+                "messages.usage-chronicle",
+                "&7 /%label% chronicle"
+        ));
+
         usageReloadTemplate = color(plugin.getConfig().getString(
                 "messages.usage-reload",
                 "&7 /%label% reload"
@@ -143,6 +180,11 @@ public class Messages {
         usageGiveTemplate = color(plugin.getConfig().getString(
                 "messages.usage-give",
                 "&7 /%label% give <player> <amount>"
+        ));
+
+        usageChronicleGiveTemplate = color(plugin.getConfig().getString(
+                "messages.usage-chronicle-give",
+                "&7 /%label% chronicle give <player>"
         ));
 
         usagePackSendTemplate = color(plugin.getConfig().getString(
@@ -230,6 +272,26 @@ public class Messages {
         return giveOverflowTemplate.replace("%player%", player);
     }
 
+    public String formatChronicleGiven(String player) {
+        return chronicleGivenTemplate.replace("%player%", player);
+    }
+
+    public String formatChronicleOverflow(String player) {
+        return chronicleOverflowTemplate.replace("%player%", player);
+    }
+
+    public String getNoChroniclePermissionMessage() {
+        return noChroniclePermissionMessage;
+    }
+
+    public String getChroniclePlayerOnlyMessage() {
+        return chroniclePlayerOnlyMessage;
+    }
+
+    public String formatChronicleReissueCooldown(long seconds) {
+        return chronicleReissueCooldownTemplate.replace("%seconds%", String.valueOf(seconds));
+    }
+
     public String formatResourcePackSent(String player) {
         return resourcePackSentTemplate.replace("%player%", player);
     }
@@ -250,12 +312,20 @@ public class Messages {
         return usageHeaderMessage;
     }
 
+    public String formatUsageChronicle(String label) {
+        return usageChronicleTemplate.replace("%label%", label);
+    }
+
     public String formatUsageReload(String label) {
         return usageReloadTemplate.replace("%label%", label);
     }
 
     public String formatUsageGive(String label) {
         return usageGiveTemplate.replace("%label%", label);
+    }
+
+    public String formatUsageChronicleGive(String label) {
+        return usageChronicleGiveTemplate.replace("%label%", label);
     }
 
     public String formatUsagePackSend(String label) {
