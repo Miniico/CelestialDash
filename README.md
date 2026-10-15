@@ -9,6 +9,10 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 **Requirements:** Java 17 and a Spigot, Paper, or Purpur server running Minecraft 1.20 or newer.
 
+## Roadmap
+
+See [the development roadmap](ROADMAP.md) for planned releases, task checklists, and completion criteria. The next milestone is 1.1.8: reliability of dashes, drops, and amulets.
+
 ## Features
 
 - Storm-based Celestial Tear drops with per-player cooldowns, world blacklisting, and configurable ground or inventory
