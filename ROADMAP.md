@@ -17,7 +17,7 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 **Objetivo:** asegurar el comportamiento del dash, los drops y el amuleto.
 
 - [x] Decidir si las lágrimas aparecen con lluvia o únicamente con tormenta eléctrica; alinear código, documentación y pruebas. Decisión: solo tormenta eléctrica (lluvia y truenos activos).
-- [ ] Definir si el dash es horizontal con elevación fija o sigue la dirección de la mirada; alinear comportamiento y documentación.
+- [x] Definir si el dash es horizontal con elevación fija o sigue la dirección de la mirada; alinear comportamiento y documentación. Decisión: conservar elevación fija; mirar arriba/abajo reduce el impulso horizontal y no cambia la velocidad vertical.
 - [ ] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso.
 - [ ] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo.
 - [ ] Probar la inmunidad de caída y su expiración.
@@ -31,10 +31,11 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 **Decisiones pendientes:**
 
-- Dirección vertical del dash.
 - Comportamiento del combo y la inmunidad ante muerte, teletransporte y cambios de mundo.
 
 Los casos de crafteo múltiple son verificaciones pendientes, no errores confirmados.
+
+**Validación de la dirección (2026-10-28):** se conserva la mecánica existente. Diez casos automatizados cubren mirar al frente, a ±45° y a ±90° en el primer y segundo dash, con cambio de mirada entre impulsos, multiplicadores independientes y consumo de lágrimas. Suite completa: 74 pruebas aprobadas, sin fallos ni omisiones. Validación visual en servidor real pendiente.
 
 **Validación del clima (2026-10-28):** compilación y suite Maven verificadas con Java 17; 64 pruebas aprobadas, sin fallos ni omisiones. Las pruebas distinguen cielo despejado, lluvia normal, tormenta eléctrica y truenos sin lluvia, y conservan las comprobaciones de cooldown y reconexión. La comprobación manual del cambio en servidor real sigue pendiente.
 

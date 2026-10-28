@@ -23,10 +23,11 @@ dash-cooldown-seconds: 10
 # Worlds where Celestial Dash cannot be used. Players with celestialdash.bypass-dash-blacklist bypass this list.
 dash-blacklist-worlds: []
 
-# Dash horizontal strength (forward push)
+# Dash horizontal strength when looking level (forward push).
+# Looking up or down reduces horizontal speed; straight up/down gives no horizontal push.
 dash-strength: 1.8
 
-# Dash vertical lift
+# Fixed vertical velocity, independent of looking up/down (multiplied for the second dash).
 dash-vertical-lift: 0.4
 
 # Custom model data for new Celestial Tears. The bundled pack uses 22001.

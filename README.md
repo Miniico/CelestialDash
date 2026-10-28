@@ -19,7 +19,7 @@ See [the development roadmap](ROADMAP.md) for planned releases, task checklists,
   delivery.
 - A localized, one-time in-game Chronicle for every player after upgrading to 1.1.7, with player recovery and admin
   reissue commands for replacement copies.
-- Wind Dash: consume the Celestial Tear in your main hand to launch in the direction you are facing, with an optional
+- Wind Dash: consume the Celestial Tear in your main hand for a horizontal impulse based on your look direction and fixed vertical lift, with an optional
   world blacklist.
 - Double Dash combo with configurable timing, second-dash multipliers, and temporary fall-damage immunity.
 - Configurable regeneration, sounds, impact particles, and particle trails.
@@ -37,6 +37,12 @@ Once per second during a thunderstorm, each eligible online player is checked in
 chance and that player's own cooldown. Ordinary rain without thunder does not generate Celestial Tears.
 Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
 is consumed for every dash.
+
+The dash always sets vertical velocity to `dash-vertical-lift`, regardless of whether you look up or down.
+The horizontal impulse follows your look direction: looking level gives the full `dash-strength`, tilting up or down
+reduces horizontal speed, and looking straight up or down gives effectively no horizontal movement. Looking down
+does not produce a downward dash. The second dash uses your current look direction and applies the configured
+strength and lift multipliers to those same rules. This preserves the existing movement behavior.
 
 `drop-delivery: "GROUND"` drops the generated Tear near that eligible player. With `drop-delivery: "INVENTORY"`, the
 same player's generated Tear is added directly to their inventory instead; it is not chosen from the ground or from

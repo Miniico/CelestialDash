@@ -242,7 +242,8 @@ public class DashHandler implements Listener {
     }
 
     private void performDash(Player player, boolean secondDash) {
-        // Direction and base strength
+        // Preserve the horizontal components of the look direction, including
+        // their pitch-dependent magnitude. Vertical velocity uses a fixed lift.
         Location dashLocation = player.getLocation();
         World world = player.getWorld();
         Vector dir = dashLocation.getDirection().normalize();
