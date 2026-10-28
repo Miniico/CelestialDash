@@ -53,6 +53,15 @@ If Double Dash is enabled, right-click again within the configured combo window 
 dash grants the configured fall-damage immunity and uses the configured strength and lift multipliers. Administrators
 can blacklist worlds from dashing; `celestialdash.bypass-dash-blacklist` bypasses that restriction.
 
+The second dash is allowed through the end of the combo window, even while the normal cooldown is active.
+After it, further clicks are blocked until the cooldown measured from the second dash expires; blocked clicks
+do not consume Tears. Its fall protection covers only the next fall-damage event within the configured duration,
+not other damage types. The first dash does not grant this protection.
+
+Disconnecting, dying, changing worlds, or successfully teleporting to a different position cancels the combo,
+fall protection, and active particle trail, while retaining the normal dash cooldown. Cancelled teleports and
+rotation-only teleports preserve the combo and protection. Cooldowns remain in memory and reset on plugin/server restart.
+
 ### The Falling Sky
 
 The first time a player joins a server running 1.1.7, CelestialDash gives them a non-editable written book, *The Falling

@@ -18,10 +18,10 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 - [x] Decidir si las lágrimas aparecen con lluvia o únicamente con tormenta eléctrica; alinear código, documentación y pruebas. Decisión: solo tormenta eléctrica (lluvia y truenos activos).
 - [x] Definir si el dash es horizontal con elevación fija o sigue la dirección de la mirada; alinear comportamiento y documentación. Decisión: conservar elevación fija; mirar arriba/abajo reduce el impulso horizontal y no cambia la velocidad vertical.
-- [ ] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso.
-- [ ] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo.
-- [ ] Probar la inmunidad de caída y su expiración.
-- [ ] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad.
+- [x] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso (pruebas automatizadas).
+- [x] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo (pruebas automatizadas).
+- [x] Probar la inmunidad de caída y su expiración (pruebas automatizadas).
+- [x] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad (pruebas automatizadas; comprobación manual pendiente).
 - [ ] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos.
 - [ ] Verificar que los amuletos conservan identidades y cargas independientes.
 - [ ] Comprobar interacciones con plugins de protección en servidor real.
@@ -29,11 +29,13 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 **Criterio de salida:** pruebas automáticas aprobadas y comprobaciones en servidor real sin pérdidas ni duplicaciones de objetos en los escenarios anteriores.
 
-**Decisiones pendientes:**
+**Decisión sobre cambios de contexto:**
 
-- Comportamiento del combo y la inmunidad ante muerte, teletransporte y cambios de mundo.
+- Desconexión, muerte, cambio de mundo y teletransporte efectivo a otra posición cancelan combo, inmunidad y estela; conservan el cooldown. Teletransportes cancelados o solo de rotación no los cancelan.
 
 Los casos de crafteo múltiple son verificaciones pendientes, no errores confirmados.
+
+**Validación del combo (2026-10-28):** suite de 89 pruebas aprobadas sin fallos ni omisiones. Quince casos nuevos usan un reloj controlado, sin esperas, para comprobar límites del combo y cooldown, protección de una sola caída, expiración, duración cero y cambios de contexto. Pruebas en el cliente y servidor real pendientes.
 
 **Validación de la dirección (2026-10-28):** se conserva la mecánica existente. Diez casos automatizados cubren mirar al frente, a ±45° y a ±90° en el primer y segundo dash, con cambio de mirada entre impulsos, multiplicadores independientes y consumo de lágrimas. Suite completa: 74 pruebas aprobadas, sin fallos ni omisiones. Validación visual en servidor real pendiente.
 
