@@ -1,6 +1,7 @@
 # CelestialDash configuration
 
-# Chance per second for a tear to drop near a player during a storm (0.0 - 1.0)
+# Chance per second for a tear to drop during a thunderstorm (0.0 - 1.0).
+# Ordinary rain does not generate Tears.
 drop-chance-per-second: 0.03
 
 # Cooldown between drops for each player (in seconds, 0 - 86400)

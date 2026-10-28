@@ -16,7 +16,7 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 **Objetivo:** asegurar el comportamiento del dash, los drops y el amuleto.
 
-- [ ] Decidir si las lágrimas aparecen con lluvia o únicamente con tormenta eléctrica; alinear código, documentación y pruebas.
+- [x] Decidir si las lágrimas aparecen con lluvia o únicamente con tormenta eléctrica; alinear código, documentación y pruebas. Decisión: solo tormenta eléctrica (lluvia y truenos activos).
 - [ ] Definir si el dash es horizontal con elevación fija o sigue la dirección de la mirada; alinear comportamiento y documentación.
 - [ ] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso.
 - [ ] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo.
@@ -31,11 +31,12 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 **Decisiones pendientes:**
 
-- Clima que permite obtener lágrimas.
 - Dirección vertical del dash.
 - Comportamiento del combo y la inmunidad ante muerte, teletransporte y cambios de mundo.
 
 Los casos de crafteo múltiple son verificaciones pendientes, no errores confirmados.
+
+**Validación del clima (2026-10-28):** compilación y suite Maven verificadas con Java 17; 64 pruebas aprobadas, sin fallos ni omisiones. Las pruebas distinguen cielo despejado, lluvia normal, tormenta eléctrica y truenos sin lluvia, y conservan las comprobaciones de cooldown y reconexión. La comprobación manual del cambio en servidor real sigue pendiente.
 
 ## 1.1.9 — Experiencia de juego
 

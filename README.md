@@ -34,7 +34,8 @@ See [the development roadmap](ROADMAP.md) for planned releases, task checklists,
 ### Celestial Tears
 
 Once per second during a thunderstorm, each eligible online player is checked independently against the configured drop
-chance and that player's own cooldown. Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
+chance and that player's own cooldown. Ordinary rain without thunder does not generate Celestial Tears.
+Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
 is consumed for every dash.
 
 `drop-delivery: "GROUND"` drops the generated Tear near that eligible player. With `drop-delivery: "INVENTORY"`, the
