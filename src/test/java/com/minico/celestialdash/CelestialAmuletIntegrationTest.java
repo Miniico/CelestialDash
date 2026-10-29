@@ -47,6 +47,64 @@ class CelestialAmuletIntegrationTest {
     }
 
     @Test
+    void separatelyCreatedAmuletsHaveDistinctIdentitiesAndDoNotStack() {
+        ItemStack first = CelestialAmulet.create();
+        ItemStack second = CelestialAmulet.create();
+        org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(plugin, "celestial_amulet_instance");
+        String firstId = first.getItemMeta().getPersistentDataContainer().get(key,
+                org.bukkit.persistence.PersistentDataType.STRING);
+        String secondId = second.getItemMeta().getPersistentDataContainer().get(key,
+                org.bukkit.persistence.PersistentDataType.STRING);
+
+        assertNotNull(firstId);
+        assertNotNull(secondId);
+        org.junit.jupiter.api.Assertions.assertNotEquals(firstId, secondId);
+        assertFalse(first.isSimilar(second));
+        PlayerMock player = Objects.requireNonNull(MockBukkit.getMock()).addPlayer();
+        player.getInventory().clear();
+        assertTrue(player.getInventory().addItem(first, second).isEmpty());
+        assertEquals(1, player.getInventory().getItem(0).getAmount());
+        assertEquals(1, player.getInventory().getItem(1).getAmount());
+    }
+
+    @Test
+    void consumingOneAmuletDoesNotChangeAnotherAmuletsCharges() {
+        ItemStack first = CelestialAmulet.create();
+        ItemStack second = CelestialAmulet.create();
+
+        assertEquals(2, CelestialAmulet.consumeUse(first));
+        assertEquals(2, CelestialAmulet.getRemainingUses(first));
+        assertEquals(3, CelestialAmulet.getRemainingUses(second));
+    }
+
+    @Test
+    void fullInventoryDoesNotMergeADistinctAmuletOrLoseTheOverflow() {
+        org.bukkit.inventory.Inventory inventory = Bukkit.createInventory(null, 9);
+        for (int slot = 0; slot < inventory.getSize(); slot++) {
+            inventory.setItem(slot, new ItemStack(Material.STONE, 64));
+        }
+        ItemStack first = CelestialAmulet.create();
+        inventory.setItem(0, first);
+        ItemStack second = CelestialAmulet.create();
+
+        java.util.Map<Integer, ItemStack> overflow = inventory.addItem(second);
+
+        assertEquals(1, overflow.size());
+        assertEquals(second, overflow.get(0));
+        assertEquals(first, inventory.getItem(0));
+        assertEquals(1, inventory.getItem(0).getAmount());
+    }
+
+    @Test
+    void rejectsRecipeWhenJustOneTearIsUnmarked() {
+        for (int slot : new int[]{1, 3, 5, 7}) {
+            ItemStack[] matrix = amuletRecipeMatrix(TearUtils.createCelestialTear());
+            matrix[slot] = new ItemStack(Material.GHAST_TEAR);
+            assertFalse(AmuletHandler.hasValidAmuletTearIngredients(matrix));
+        }
+    }
+
+    @Test
     void registersTheConfiguredAmuletRecipe() {
         assertNotNull(Bukkit.getRecipe(CelestialAmulet.getRecipeKey()));
 

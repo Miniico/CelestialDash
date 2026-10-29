@@ -1,6 +1,6 @@
 # Roadmap de CelestialDash
 
-Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-10-15.
+Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-10-29.
 
 La prioridad es consolidar las mecánicas actuales, validar su experiencia con jugadores y después ampliar la progresión. Las versiones son objetivos de planificación; no tienen fechas de entrega comprometidas.
 
@@ -34,6 +34,8 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 - Desconexión, muerte, cambio de mundo y teletransporte efectivo a otra posición cancelan combo, inmunidad y estela; conservan el cooldown. Teletransportes cancelados o solo de rotación no los cancelan.
 
 Los casos de crafteo múltiple son verificaciones pendientes, no errores confirmados.
+
+**Preparación del crafteo (2026-10-29):** cuatro pruebas adicionales verifican UUID distintos, cargas independientes, overflow de un inventario MockBukkit lleno y rechazo de una lágrima vanilla en cualquiera de los cuatro huecos. Suite completa: 93 pruebas aprobadas. Se corrige también `api-version` como texto para permitir cargar el JAR en Paper 1.20. El [protocolo de crafteo manual](docs/amulet-crafting-tests.md) registra los casos pendientes de clic normal, Shift y capacidad del inventario. Estas comprobaciones automáticas no demuestran el consumo real de ingredientes ni el crafteo con Shift; las casillas manuales siguen abiertas.
 
 **Validación del combo (2026-10-28):** suite de 89 pruebas aprobadas sin fallos ni omisiones. Quince casos nuevos usan un reloj controlado, sin esperas, para comprobar límites del combo y cooldown, protección de una sola caída, expiración, duración cero y cambios de contexto. Pruebas en el cliente y servidor real pendientes.
 
