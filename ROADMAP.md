@@ -103,3 +103,7 @@ Los casos de crafteo múltiple son verificaciones pendientes, no errores confirm
 El contenido concreto de esta etapa queda abierto hasta disponer del feedback de la beta.
 
 
+
+## Seguimiento manual — 2026-10-29
+
+Paper 26.3: observadas extracciones normales y con Shift, con 16 amuletos y 16 identidades únicas. Verificada independencia de cargas: uno pasa de 3 a 2 y los otros 15 permanecen en 3. El [registro de pruebas](docs/amulet-crafting-tests.md) mantiene pendientes inventario lleno/casi lleno, ingredientes falsos y todas las comprobaciones en 1.20. El bloque completo de crafteo sigue abierto.
