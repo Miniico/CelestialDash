@@ -19,7 +19,7 @@ See [the development roadmap](ROADMAP.md) for planned releases, task checklists,
   delivery.
 - A localized, one-time in-game Chronicle for every player after upgrading to 1.1.7, with player recovery and admin
   reissue commands for replacement copies.
-- Wind Dash: consume the Celestial Tear in your main hand to launch in the direction you are facing, with an optional
+- Wind Dash: consume the Celestial Tear in your main hand for a horizontal impulse based on your look direction and fixed vertical lift, with an optional
   world blacklist.
 - Double Dash combo with configurable timing, second-dash multipliers, and temporary fall-damage immunity.
 - Configurable regeneration, sounds, impact particles, and particle trails.
@@ -34,8 +34,15 @@ See [the development roadmap](ROADMAP.md) for planned releases, task checklists,
 ### Celestial Tears
 
 Once per second during a thunderstorm, each eligible online player is checked independently against the configured drop
-chance and that player's own cooldown. Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
+chance and that player's own cooldown. Ordinary rain without thunder does not generate Celestial Tears.
+Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
 is consumed for every dash.
+
+The dash always sets vertical velocity to `dash-vertical-lift`, regardless of whether you look up or down.
+The horizontal impulse follows your look direction: looking level gives the full `dash-strength`, tilting up or down
+reduces horizontal speed, and looking straight up or down gives effectively no horizontal movement. Looking down
+does not produce a downward dash. The second dash uses your current look direction and applies the configured
+strength and lift multipliers to those same rules. This preserves the existing movement behavior.
 
 `drop-delivery: "GROUND"` drops the generated Tear near that eligible player. With `drop-delivery: "INVENTORY"`, the
 same player's generated Tear is added directly to their inventory instead; it is not chosen from the ground or from
@@ -45,6 +52,15 @@ affects storm-generated Tears only, not `/celestialdash give`.
 If Double Dash is enabled, right-click again within the configured combo window to perform a second dash. The second
 dash grants the configured fall-damage immunity and uses the configured strength and lift multipliers. Administrators
 can blacklist worlds from dashing; `celestialdash.bypass-dash-blacklist` bypasses that restriction.
+
+The second dash is allowed through the end of the combo window, even while the normal cooldown is active.
+After it, further clicks are blocked until the cooldown measured from the second dash expires; blocked clicks
+do not consume Tears. Its fall protection covers only the next fall-damage event within the configured duration,
+not other damage types. The first dash does not grant this protection.
+
+Disconnecting, dying, changing worlds, or successfully teleporting to a different position cancels the combo,
+fall protection, and active particle trail, while retaining the normal dash cooldown. Cancelled teleports and
+rotation-only teleports preserve the combo and protection. Cooldowns remain in memory and reset on plugin/server restart.
 
 ### The Falling Sky
 

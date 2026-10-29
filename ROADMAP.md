@@ -1,6 +1,6 @@
 # Roadmap de CelestialDash
 
-Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-10-15.
+Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-10-29.
 
 La prioridad es consolidar las mecánicas actuales, validar su experiencia con jugadores y después ampliar la progresión. Las versiones son objetivos de planificación; no tienen fechas de entrega comprometidas.
 
@@ -16,12 +16,12 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 **Objetivo:** asegurar el comportamiento del dash, los drops y el amuleto.
 
-- [ ] Decidir si las lágrimas aparecen con lluvia o únicamente con tormenta eléctrica; alinear código, documentación y pruebas.
-- [ ] Definir si el dash es horizontal con elevación fija o sigue la dirección de la mirada; alinear comportamiento y documentación.
-- [ ] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso.
-- [ ] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo.
-- [ ] Probar la inmunidad de caída y su expiración.
-- [ ] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad.
+- [x] Decidir si las lágrimas aparecen con lluvia o únicamente con tormenta eléctrica; alinear código, documentación y pruebas. Decisión: solo tormenta eléctrica (lluvia y truenos activos).
+- [x] Definir si el dash es horizontal con elevación fija o sigue la dirección de la mirada; alinear comportamiento y documentación. Decisión: conservar elevación fija; mirar arriba/abajo reduce el impulso horizontal y no cambia la velocidad vertical.
+- [x] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso (pruebas automatizadas).
+- [x] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo (pruebas automatizadas).
+- [x] Probar la inmunidad de caída y su expiración (pruebas automatizadas).
+- [x] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad (pruebas automatizadas; comprobación manual pendiente).
 - [ ] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos.
 - [ ] Verificar que los amuletos conservan identidades y cargas independientes.
 - [ ] Comprobar interacciones con plugins de protección en servidor real.
@@ -29,13 +29,19 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 
 **Criterio de salida:** pruebas automáticas aprobadas y comprobaciones en servidor real sin pérdidas ni duplicaciones de objetos en los escenarios anteriores.
 
-**Decisiones pendientes:**
+**Decisión sobre cambios de contexto:**
 
-- Clima que permite obtener lágrimas.
-- Dirección vertical del dash.
-- Comportamiento del combo y la inmunidad ante muerte, teletransporte y cambios de mundo.
+- Desconexión, muerte, cambio de mundo y teletransporte efectivo a otra posición cancelan combo, inmunidad y estela; conservan el cooldown. Teletransportes cancelados o solo de rotación no los cancelan.
 
 Los casos de crafteo múltiple son verificaciones pendientes, no errores confirmados.
+
+**Preparación del crafteo (2026-10-29):** cuatro pruebas adicionales verifican UUID distintos, cargas independientes, overflow de un inventario MockBukkit lleno y rechazo de una lágrima vanilla en cualquiera de los cuatro huecos. Suite completa: 93 pruebas aprobadas. Se corrige también `api-version` como texto para permitir cargar el JAR en Paper 1.20. El [protocolo de crafteo manual](docs/amulet-crafting-tests.md) registra los casos pendientes de clic normal, Shift y capacidad del inventario. Estas comprobaciones automáticas no demuestran el consumo real de ingredientes ni el crafteo con Shift; las casillas manuales siguen abiertas.
+
+**Validación del combo (2026-10-28):** suite de 89 pruebas aprobadas sin fallos ni omisiones. Quince casos nuevos usan un reloj controlado, sin esperas, para comprobar límites del combo y cooldown, protección de una sola caída, expiración, duración cero y cambios de contexto. Pruebas en el cliente y servidor real pendientes.
+
+**Validación de la dirección (2026-10-28):** se conserva la mecánica existente. Diez casos automatizados cubren mirar al frente, a ±45° y a ±90° en el primer y segundo dash, con cambio de mirada entre impulsos, multiplicadores independientes y consumo de lágrimas. Suite completa: 74 pruebas aprobadas, sin fallos ni omisiones. Validación visual en servidor real pendiente.
+
+**Validación del clima (2026-10-28):** compilación y suite Maven verificadas con Java 17; 64 pruebas aprobadas, sin fallos ni omisiones. Las pruebas distinguen cielo despejado, lluvia normal, tormenta eléctrica y truenos sin lluvia, y conservan las comprobaciones de cooldown y reconexión. La comprobación manual del cambio en servidor real sigue pendiente.
 
 ## 1.1.9 — Experiencia de juego
 
@@ -97,3 +103,7 @@ Los casos de crafteo múltiple son verificaciones pendientes, no errores confirm
 El contenido concreto de esta etapa queda abierto hasta disponer del feedback de la beta.
 
 
+
+## Seguimiento manual — 2026-10-29
+
+Paper 26.3: observadas extracciones normales y con Shift, con 16 amuletos y 16 identidades únicas. Verificada independencia de cargas: uno pasa de 3 a 2 y los otros 15 permanecen en 3. El [registro de pruebas](docs/amulet-crafting-tests.md) mantiene pendientes inventario lleno/casi lleno, ingredientes falsos y todas las comprobaciones en 1.20. El bloque completo de crafteo sigue abierto.

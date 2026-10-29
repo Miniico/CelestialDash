@@ -32,9 +32,38 @@ class DropHandlerTest {
     }
 
     @Test
+    void dropsOnlyDuringAThunderstormAndDoesNotSpendCooldownDuringRain() {
+        PlayerMock player = eligiblePlayer();
+        player.getWorld().setStorm(false);
+        player.getWorld().setThundering(false);
+        server().getScheduler().performTicks(20L);
+        assertEquals(0, TearUtils.countTears(player));
+
+        player.getWorld().setStorm(true);
+        server().getScheduler().performTicks(20L);
+        assertEquals(0, TearUtils.countTears(player));
+
+        player.getWorld().setThundering(true);
+        server().getScheduler().performTicks(20L);
+        assertEquals(1, TearUtils.countTears(player));
+    }
+
+    @Test
+    void doesNotDropWhenThunderIsSetWithoutRain() {
+        PlayerMock player = eligiblePlayer();
+        player.getWorld().setStorm(false);
+        player.getWorld().setThundering(true);
+
+        server().getScheduler().performTicks(20L);
+
+        assertEquals(0, TearUtils.countTears(player));
+    }
+
+    @Test
     void keepsTheStormDropCooldownAfterReconnect() {
         PlayerMock player = eligiblePlayer();
         player.getWorld().setStorm(true);
+        player.getWorld().setThundering(true);
 
         server().getScheduler().performTicks(20L);
         assertEquals(1, TearUtils.countTears(player));
@@ -50,6 +79,7 @@ class DropHandlerTest {
     void removesExpiredStormDropCooldowns() {
         PlayerMock player = eligiblePlayer();
         player.getWorld().setStorm(true);
+        player.getWorld().setThundering(true);
 
         server().getScheduler().performTicks(20L);
         assertEquals(1, TearUtils.countTears(player));

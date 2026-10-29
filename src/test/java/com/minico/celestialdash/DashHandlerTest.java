@@ -3,6 +3,7 @@ package com.minico.celestialdash;
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import org.bukkit.Material;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.Event;
@@ -13,6 +14,8 @@ import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +25,59 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DashHandlerTest {
 
     private CelestialDash plugin;
+
+    @ParameterizedTest
+    @CsvSource({"0, 1", "-45, 0.7071067811865476", "45, 0.7071067811865476", "-90, 0", "90, 0"})
+    void firstDashKeepsFixedLiftWhenLookingForwardUpOrDown(double pitch, double horizontalFraction) {
+        configureImmediateDash();
+        plugin.getConfig().set("dash-strength", 1.8);
+        plugin.getConfig().set("dash-vertical-lift", 0.4);
+        plugin.loadSettings();
+        PlayerMock player = eligiblePlayerWithTear();
+        lookAtPitch(player, pitch);
+
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+
+        assertEquals(0.0, player.getVelocity().getX(), 1.0e-9);
+        assertEquals(1.8 * horizontalFraction, player.getVelocity().getZ(), 1.0e-9);
+        assertEquals(0.4, player.getVelocity().getY(), 1.0e-9);
+        assertEquals(1, player.getInventory().getItemInMainHand().getAmount());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0, 1", "-45, 0.7071067811865476", "45, 0.7071067811865476", "-90, 0", "90, 0"})
+    void secondDashUsesCurrentLookAndMultipliesFixedLift(double pitch, double horizontalFraction) {
+        configureImmediateDash();
+        plugin.getConfig().set("dash-cooldown-seconds", 60);
+        plugin.getConfig().set("dash-strength", 1.8);
+        plugin.getConfig().set("dash-vertical-lift", 0.4);
+        plugin.getConfig().set("double-dash.enabled", true);
+        plugin.getConfig().set("double-dash.window-ms", 4000);
+        plugin.getConfig().set("double-dash.strength-multiplier", 1.5);
+        plugin.getConfig().set("double-dash.lift-multiplier", 1.25);
+        plugin.loadSettings();
+        PlayerMock player = eligiblePlayerWithTear();
+        player.getInventory().setItemInMainHand(TearUtils.createCelestialTear(3));
+        lookAtPitch(player, 0);
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+        assertEquals(2, player.getInventory().getItemInMainHand().getAmount());
+        lookAtPitch(player, pitch);
+
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+
+        assertEquals(0.0, player.getVelocity().getX(), 1.0e-9);
+        assertEquals(2.7 * horizontalFraction, player.getVelocity().getZ(), 1.0e-9);
+        assertEquals(0.5, player.getVelocity().getY(), 1.0e-9);
+        assertEquals(1, player.getInventory().getItemInMainHand().getAmount());
+        assertEquals(false, plugin.getDashHandler().isInDoubleDashWindow(player));
+    }
+
+    private void lookAtPitch(PlayerMock player, double pitch) {
+        Location location = player.getLocation();
+        location.setYaw(0);
+        location.setPitch((float) pitch);
+        player.teleport(location);
+    }
 
     @BeforeEach
     void setUp() {

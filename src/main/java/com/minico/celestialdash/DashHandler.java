@@ -11,6 +11,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -24,11 +27,13 @@ import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.LongSupplier;
 
 public class DashHandler implements Listener {
 
     private final CelestialDash plugin;
     private final Messages messages;
+    private final LongSupplier currentTimeMillis;
 
     // Last dash time per player (for normal cooldown)
     private final Map<UUID, Long> lastDash = new HashMap<>();
@@ -41,6 +46,11 @@ public class DashHandler implements Listener {
     private final BukkitTask stateCleanupTask;
 
     public DashHandler(CelestialDash plugin, Messages messages) {
+        this(plugin, messages, System::currentTimeMillis);
+    }
+
+    DashHandler(CelestialDash plugin, Messages messages, LongSupplier currentTimeMillis) {
+        this.currentTimeMillis = currentTimeMillis;
         this.plugin = plugin;
         this.messages = messages;
         this.stateCleanupTask = new BukkitRunnable() {
@@ -98,7 +108,7 @@ public class DashHandler implements Listener {
             return;
         }
 
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
 
         boolean doubleDashEnabled = dashSettings.doubleDash().enabled();
         boolean isSecondDash = false;
@@ -183,7 +193,7 @@ public class DashHandler implements Listener {
         if (ticks <= 0) return;
 
         long durationMs = ticks * 50L;
-        fallImmunityUntil.put(uuid, System.currentTimeMillis() + durationMs);
+        fallImmunityUntil.put(uuid, currentTimeMillis.getAsLong() + durationMs);
     }
 
     @EventHandler
@@ -196,7 +206,7 @@ public class DashHandler implements Listener {
         Long until = fallImmunityUntil.get(uuid);
         if (until == null) return;
 
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
         if (now <= until) {
             event.setCancelled(true);
         }
@@ -208,10 +218,34 @@ public class DashHandler implements Listener {
     @SuppressWarnings("unused")
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        // Keep the normal dash cooldown across reconnects.
+        clearTransientState(uuid);
+    }
+
+    private void clearTransientState(UUID uuid) {
+        // Keep the normal dash cooldown across changes of player context.
         comboWindowEnd.remove(uuid);
         fallImmunityUntil.remove(uuid);
         cancelTrail(uuid);
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        clearTransientState(event.getEntity().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        Location to = event.getTo();
+        Location from = event.getFrom();
+        if (to != null && (!from.getWorld().equals(to.getWorld())
+                || from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ())) {
+            clearTransientState(event.getPlayer().getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        clearTransientState(event.getPlayer().getUniqueId());
     }
 
     public void stop() {
@@ -228,7 +262,7 @@ public class DashHandler implements Listener {
             return;
         }
 
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
         if (!lastDash.isEmpty()) {
             long cooldown = plugin.getSettings().dash().cooldownMs();
             lastDash.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
@@ -242,7 +276,8 @@ public class DashHandler implements Listener {
     }
 
     private void performDash(Player player, boolean secondDash) {
-        // Direction and base strength
+        // Preserve the horizontal components of the look direction, including
+        // their pitch-dependent magnitude. Vertical velocity uses a fixed lift.
         Location dashLocation = player.getLocation();
         World world = player.getWorld();
         Vector dir = dashLocation.getDirection().normalize();
@@ -365,7 +400,7 @@ public class DashHandler implements Listener {
     public long getRemainingCooldownSeconds(Player player) {
         UUID uuid = player.getUniqueId();
         long last = lastDash.getOrDefault(uuid, 0L);
-        return calculateRemainingCooldownSeconds(last, System.currentTimeMillis(), plugin.getSettings().dash().cooldownMs());
+        return calculateRemainingCooldownSeconds(last, currentTimeMillis.getAsLong(), plugin.getSettings().dash().cooldownMs());
     }
 
     static long calculateRemainingCooldownSeconds(long lastDashMs, long nowMs, long cooldownMs) {
@@ -382,7 +417,7 @@ public class DashHandler implements Listener {
         if (windowEnd == null) {
             return false;
         }
-        if (System.currentTimeMillis() <= windowEnd) {
+        if (currentTimeMillis.getAsLong() <= windowEnd) {
             return true;
         }
         comboWindowEnd.remove(uuid);
