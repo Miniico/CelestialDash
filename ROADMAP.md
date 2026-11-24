@@ -1,6 +1,6 @@
 # Roadmap de CelestialDash
 
-Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-10-29.
+Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-11-24.
 
 La prioridad es consolidar las mecánicas actuales, validar su experiencia con jugadores y después ampliar la progresión. Las versiones son objetivos de planificación; no tienen fechas de entrega comprometidas.
 
@@ -22,8 +22,8 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 - [x] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo (pruebas automatizadas).
 - [x] Probar la inmunidad de caída y su expiración (pruebas automatizadas).
 - [x] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad (pruebas automatizadas; comprobación manual pendiente).
-- [ ] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos.
-- [ ] Verificar que los amuletos conservan identidades y cargas independientes.
+- [ ] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos. Confirmado por el usuario en 26.3; pendiente repetir en 1.20.
+- [ ] Verificar que los amuletos conservan identidades y cargas independientes. Verificado en registros de 26.3; pendiente repetir en 1.20.
 - [ ] Comprobar interacciones con plugins de protección en servidor real.
 - [ ] Publicar los resultados de validación, los cambios y las limitaciones conocidas.
 
@@ -107,3 +107,7 @@ El contenido concreto de esta etapa queda abierto hasta disponer del feedback de
 ## Seguimiento manual — 2026-10-29
 
 Paper 26.3: observadas extracciones normales y con Shift, con 16 amuletos y 16 identidades únicas. Verificada independencia de cargas: uno pasa de 3 a 2 y los otros 15 permanecen en 3. El [registro de pruebas](docs/amulet-crafting-tests.md) mantiene pendientes inventario lleno/casi lleno, ingredientes falsos y todas las comprobaciones en 1.20. El bloque completo de crafteo sigue abierto.
+
+## Seguimiento manual — 2026-11-24
+
+El usuario confirma que los casos guiados de crafteo funcionan en 26.3, incluidos inventario lleno/casi lleno e ingredientes inválidos. La matriz de 26.3 queda confirmada por el usuario. No se extiende esta confirmación a 1.20 ni a plugins de protección: esas comprobaciones continúan pendientes. Véase el [registro de pruebas](docs/amulet-crafting-tests.md).

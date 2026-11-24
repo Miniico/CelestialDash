@@ -1,6 +1,6 @@
 # Pruebas manuales del crafteo del amuleto
 
-Estado: validación parcial en Paper 26.3; Paper 1.20 pendiente. Las pruebas MockBukkit de identidad, cargas e inventario no sustituyen las extracciones reales de la mesa de crafteo.
+Estado: casos de crafteo confirmados por el usuario en Paper 26.3; Paper 1.20 pendiente. Las pruebas MockBukkit de identidad, cargas e inventario no sustituyen las extracciones reales de la mesa de crafteo.
 
 ## Preparación
 
@@ -22,12 +22,12 @@ Receta: cuatro Lágrimas Celestiales en cruz alrededor de un lingote de netherit
 
 | Caso | Procedimiento | Resultado esperado | 1.20 | 26.3 |
 |---|---|---|---|---|
-| Normal | Una lágrima en cada posición y un lingote; recoger con clic normal | Un amuleto, consumo de cuatro lágrimas y un lingote | Pendiente | Pendiente |
+| Normal | Una lágrima en cada posición y un lingote; recoger con clic normal | Un amuleto, consumo de cuatro lágrimas y un lingote | Pendiente | Confirmado por el usuario |
 | Consecutivos | Repetir la receta dos veces | Dos amuletos sin apilar, con identidades distintas | Pendiente | Aprobado |
-| Shift | Ocho lágrimas en cada posición y ocho lingotes; recoger con Shift | Hasta ocho amuletos, sin identidades duplicadas; consumo exacto por unidad | Pendiente | Pendiente |
-| Un hueco | Dejar un solo hueco libre antes de usar Shift | Solo lo que cabe; el resto de ingredientes permanece, sin pérdidas | Pendiente | Pendiente |
-| Lleno | Llenar el inventario, con cursor vacío, e intentar Shift | No desaparecen ingredientes ni aparecen objetos duplicados | Pendiente | Pendiente |
-| Ingrediente falso | Sustituir una lágrima por una ghast tear vanilla; repetir en cada posición | No aparece amuleto ni se consumen ingredientes | Pendiente | Pendiente |
+| Shift | Ocho lágrimas en cada posición y ocho lingotes; recoger con Shift | Hasta ocho amuletos, sin identidades duplicadas; consumo exacto por unidad | Pendiente | Confirmado por el usuario |
+| Un hueco | Dejar un solo hueco libre antes de usar Shift | Solo lo que cabe; el resto de ingredientes permanece, sin pérdidas | Pendiente | Confirmado por el usuario |
+| Lleno | Llenar el inventario, con cursor vacío, e intentar Shift | No desaparecen ingredientes ni aparecen objetos duplicados | Pendiente | Confirmado por el usuario |
+| Ingrediente falso | Sustituir una lágrima por una ghast tear vanilla; repetir en cada posición | No aparece amuleto ni se consumen ingredientes | Pendiente | Confirmado por el usuario |
 | Cargas independientes | Fabricar dos amuletos; usar uno con un efecto negativo o fuego | Baja solo la carga del amuleto usado; el otro conserva las suyas | Pendiente | Aprobado |
 
 Después de cada extracción, ejecutar `/cdcraftcheck`. El informe debe mostrar una identidad por amuleto y `duplicados=false`. Cerrar la mesa y repetir el comando para incluir cualquier objeto devuelto al inventario. Verificar también el cursor y posibles objetos en el suelo.
@@ -46,4 +46,8 @@ El registro local muestra dos extracciones normales con identidades distintas a 
 
 A las 01:53 los 16 amuletos tenían 3 cargas. Después de aplicar veneno y usar uno, la inspección de las 01:54 confirma un amuleto con 2 cargas y los otros 15 con 3, manteniendo las mismas 16 identidades. Cargas independientes: aprobado en 26.3.
 
-Continúan pendientes inventario con un hueco/lleno, ingredientes falsos y repetición de todos los casos en 1.20. La extracción con Shift y la unicidad han sido observadas, pero no se da por cerrada toda la matriz manual.
+A fecha 2026-10-29 continuaban pendientes inventario con un hueco/lleno, ingredientes falsos y repetición de todos los casos en 1.20. La extracción con Shift y la unicidad han sido observadas, pero no se da por cerrada toda la matriz manual.
+
+## Confirmación del usuario (2026-11-24)
+
+El usuario confirma que funcionan los casos guiados de crafteo en 26.3, incluidos ingredientes inválidos y capacidad del inventario. Se registran como confirmados por el usuario, sin atribuirles observación directa ni nuevos registros automáticos. Esta confirmación completa la matriz de 26.3; la repetición en 1.20 y la comprobación con plugins de protección siguen pendientes.
