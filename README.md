@@ -13,6 +13,8 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 See [the development roadmap](ROADMAP.md) for planned releases, task checklists, and completion criteria. The next milestone is 1.1.8: reliability of dashes, drops, and amulets.
 
+The [1.1.8 validation report](docs/validation-1.1.8.md) records implemented changes, automated results, tested server combinations, and remaining manual checks. This milestone is still in development.
+
 ## Features
 
 - Storm-based Celestial Tear drops with per-player cooldowns, world blacklisting, and configurable ground or inventory

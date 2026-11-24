@@ -25,7 +25,7 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 - [ ] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos. Confirmado por el usuario en 26.3; pendiente repetir en 1.20.
 - [ ] Verificar que los amuletos conservan identidades y cargas independientes. Verificado en registros de 26.3; pendiente repetir en 1.20.
 - [ ] Comprobar interacciones con plugins de protección en servidor real.
-- [ ] Publicar los resultados de validación, los cambios y las limitaciones conocidas.
+- [x] Publicar los resultados de validación, los cambios y las limitaciones conocidas. Véase el [informe de validación 1.1.8](docs/validation-1.1.8.md), que distingue resultados automáticos, comprobaciones reales y tareas pendientes; no anuncia una release ni cierra el hito.
 
 **Criterio de salida:** pruebas automáticas aprobadas y comprobaciones en servidor real sin pérdidas ni duplicaciones de objetos en los escenarios anteriores.
 
