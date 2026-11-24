@@ -1,6 +1,6 @@
 # Pruebas manuales del crafteo del amuleto
 
-Estado: casos de crafteo confirmados por el usuario en Paper 26.3; Paper 1.20 pendiente. Las pruebas MockBukkit de identidad, cargas e inventario no sustituyen las extracciones reales de la mesa de crafteo.
+Estado: repetición de crafteo y uso completada en Paper 1.20 y 26.3. Véase el [registro del 2026-11-24](crafting-validation-2026-11-24.md), que detalla clics reales, resultados y límites. Las pruebas MockBukkit de identidad, cargas e inventario no sustituyen las extracciones reales de la mesa de crafteo.
 
 ## Preparación
 
@@ -22,13 +22,13 @@ Receta: cuatro Lágrimas Celestiales en cruz alrededor de un lingote de netherit
 
 | Caso | Procedimiento | Resultado esperado | 1.20 | 26.3 |
 |---|---|---|---|---|
-| Normal | Una lágrima en cada posición y un lingote; recoger con clic normal | Un amuleto, consumo de cuatro lágrimas y un lingote | Pendiente | Confirmado por el usuario |
-| Consecutivos | Repetir la receta dos veces | Dos amuletos sin apilar, con identidades distintas | Pendiente | Aprobado |
-| Shift | Ocho lágrimas en cada posición y ocho lingotes; recoger con Shift | Hasta ocho amuletos, sin identidades duplicadas; consumo exacto por unidad | Pendiente | Confirmado por el usuario |
-| Un hueco | Dejar un solo hueco libre antes de usar Shift | Solo lo que cabe; el resto de ingredientes permanece, sin pérdidas | Pendiente | Confirmado por el usuario |
-| Lleno | Llenar el inventario, con cursor vacío, e intentar Shift | No desaparecen ingredientes ni aparecen objetos duplicados | Pendiente | Confirmado por el usuario |
-| Ingrediente falso | Sustituir una lágrima por una ghast tear vanilla; repetir en cada posición | No aparece amuleto ni se consumen ingredientes | Pendiente | Confirmado por el usuario |
-| Cargas independientes | Fabricar dos amuletos; usar uno con un efecto negativo o fuego | Baja solo la carga del amuleto usado; el otro conserva las suyas | Pendiente | Aprobado |
+| Normal | Una lágrima en cada posición y un lingote; recoger con clic normal | Un amuleto, consumo de cuatro lágrimas y un lingote | Aprobado | Repetido y aprobado |
+| Consecutivos | Repetir la receta dos veces | Dos amuletos sin apilar, con identidades distintas | Aprobado | Repetido y aprobado |
+| Shift | Ocho lágrimas en cada posición y ocho lingotes; recoger con Shift | Hasta ocho amuletos, sin identidades duplicadas; consumo exacto por unidad | Validado: 3 normales + 5 con Shift | Repetido: 8 en un solo Shift |
+| Un hueco | Dejar un solo hueco libre antes de usar Shift | Solo lo que cabe; el resto de ingredientes permanece, sin pérdidas | Aprobado | Repetido y aprobado |
+| Lleno | Llenar el inventario, con cursor vacío, e intentar Shift | No desaparecen ingredientes ni aparecen objetos duplicados | Aprobado | Repetido y aprobado |
+| Ingrediente falso | Sustituir una lágrima por una ghast tear vanilla; repetir en cada posición | No aparece amuleto ni se consumen ingredientes | Aprobado en las cuatro posiciones | Repetido y aprobado en las cuatro posiciones |
+| Cargas independientes | Fabricar dos amuletos; usar uno con un efecto negativo o fuego | Baja solo la carga del amuleto usado; el otro conserva las suyas | Aprobado | Repetido y aprobado |
 
 Después de cada extracción, ejecutar `/cdcraftcheck`. El informe debe mostrar una identidad por amuleto y `duplicados=false`. Cerrar la mesa y repetir el comando para incluir cualquier objeto devuelto al inventario. Verificar también el cursor y posibles objetos en el suelo.
 
@@ -50,4 +50,4 @@ A fecha 2026-10-29 continuaban pendientes inventario con un hueco/lleno, ingredi
 
 ## Confirmación del usuario (2026-11-24)
 
-El usuario confirma que funcionan los casos guiados de crafteo en 26.3, incluidos ingredientes inválidos y capacidad del inventario. Se registran como confirmados por el usuario, sin atribuirles observación directa ni nuevos registros automáticos. Esta confirmación completa la matriz de 26.3; la repetición en 1.20 y la comprobación con plugins de protección siguen pendientes.
+El usuario confirmó que funcionaban los casos guiados de crafteo en 26.3, incluidos ingredientes inválidos y capacidad del inventario. Esa confirmación se registró sin atribuirle observación directa ni nuevos registros automáticos. En aquel momento faltaban la repetición de 1.20 y la comprobación con plugins de protección. Posteriormente se completó la repetición del crafteo de ambas versiones descrita en el [registro del mismo día](crafting-validation-2026-11-24.md); las regiones protegidas siguen pendientes.

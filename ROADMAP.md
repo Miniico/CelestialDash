@@ -22,8 +22,8 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 - [x] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo (pruebas automatizadas).
 - [x] Probar la inmunidad de caída y su expiración (pruebas automatizadas).
 - [x] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad (pruebas automatizadas; comprobación manual pendiente).
-- [ ] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos. Confirmado por el usuario en 26.3; pendiente repetir en 1.20.
-- [ ] Verificar que los amuletos conservan identidades y cargas independientes. Verificado en registros de 26.3; pendiente repetir en 1.20.
+- [x] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos. Repetido en 1.20 y 26.3 con clics del cliente y auditoría: capacidad del inventario, ingredientes inválidos y consumo exacto. En 1.20 la secuencia múltiple fue 3 normales + 5 con Shift; en 26.3 un Shift extrajo 8. Véase el [registro del 2026-11-24](docs/crafting-validation-2026-11-24.md).
+- [x] Verificar que los amuletos conservan identidades y cargas independientes. Dos amuletos crafteados consecutivamente en cada servidor conservan UUID distintos; al usar uno pasa de 3 a 2 cargas y el otro mantiene 3. Comprobado en 1.20 y 26.3 con auditoría del uso real.
 - [ ] Comprobar interacciones con plugins de protección en servidor real.
 - [x] Publicar los resultados de validación, los cambios y las limitaciones conocidas. Véase el [informe de validación 1.1.8](docs/validation-1.1.8.md), que distingue resultados automáticos, comprobaciones reales y tareas pendientes; no anuncia una release ni cierra el hito.
 
@@ -110,8 +110,12 @@ Paper 26.3: observadas extracciones normales y con Shift, con 16 amuletos y 16 i
 
 ## Seguimiento manual — 2026-11-24
 
-El usuario confirma que los casos guiados de crafteo funcionan en 26.3, incluidos inventario lleno/casi lleno e ingredientes inválidos. La matriz de 26.3 queda confirmada por el usuario. No se extiende esta confirmación a 1.20 ni a plugins de protección: esas comprobaciones continúan pendientes. Véase el [registro de pruebas](docs/amulet-crafting-tests.md).
+El usuario confirmó que los casos guiados de crafteo funcionaban en 26.3, incluidos inventario lleno/casi lleno e ingredientes inválidos. Esa confirmación no se extendió a 1.20 ni a plugins de protección. La repetición posterior de crafteo de ambas versiones figura más abajo; las regiones protegidas siguen pendientes. Véase el [registro de pruebas](docs/amulet-crafting-tests.md).
 
 ## Protecciones — preparación y pruebas automáticas (2026-11-24)
 
 WorldGuard y WorldEdit están instalados y su arranque junto a CelestialDash está verificado: Paper 1.20 con WorldGuard 7.0.9/WorldEdit 7.2.15/Java 17; Paper 26.3 con WorldGuard 7.0.21/WorldEdit 7.4.6/Java 25. Suite Maven: 111 pruebas aprobadas, incluidas 18 nuevas de contrato de interacción con protección simulada. El [protocolo de protección](docs/protection-tests.md) distingue estas comprobaciones de la prueba real dentro de una región WorldGuard, que sigue pendiente en ambas versiones. No se cierra todavía la tarea de protección ni la etapa 1.1.8.
+
+## Repetición del crafteo y uso — 2026-11-24
+
+Completados en ambos servidores el crafteo normal, dos amuletos consecutivos, Shift, inventario con un hueco/lleno y las cuatro posiciones con una lágrima vanilla. El uso real elimina veneno y fuego y solo reduce la carga del amuleto usado; se conservan las identidades. Modelos del pack observados en ambos clientes. Inventarios y estado originales recuperados y servidores detenidos limpiamente. El [registro completo](docs/crafting-validation-2026-11-24.md) precisa la secuencia mixta de 1.20 y la extracción única de ocho de 26.3. Las pruebas dentro de regiones WorldGuard y las demás comprobaciones manuales de mecánicas siguen pendientes.
