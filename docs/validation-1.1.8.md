@@ -43,8 +43,8 @@ Las pruebas de combo desactivan estela, partículas, sonido y regeneración. Com
 
 | Entorno local | Arranque conjunto | Crafteo e identidades | Interacción en región WorldGuard |
 |---|---|---|---|
-| Paper 1.20 build 17, Java 17, WorldGuard 7.0.9, WorldEdit 7.2.15 | Comprobado | Crafteo, capacidad, ingredientes inválidos y uso comprobados; Shift mixto 3 normales + 5 con Shift | Pendiente |
-| Paper 26.3 build 194, Java 25, WorldGuard 7.0.21, WorldEdit 7.4.6 | Comprobado | Repetición completa de crafteo, capacidad, ingredientes inválidos, identidades y uso; un Shift extrajo 8 | Pendiente |
+| Paper 1.20 build 17, Java 17, WorldGuard 7.0.9, WorldEdit 7.2.15 | Comprobado | Crafteo, capacidad, ingredientes inválidos y uso comprobados; Shift mixto 3 normales + 5 con Shift | Matriz de 14 casos completada sin OP ni bypass; 16 clics incluyendo repetición |
+| Paper 26.3 build 194, Java 25, WorldGuard 7.0.21, WorldEdit 7.4.6 | Comprobado | Repetición completa de crafteo, capacidad, ingredientes inválidos, identidades y uso; un Shift extrajo 8 | Matriz de 14 casos completada sin OP ni bypass |
 
 Ambos servidores alcanzaron `Done` con los plugins habilitados y se detuvieron limpiamente durante la comprobación de arranque. Esto demuestra carga conjunta, no compatibilidad funcional completa. WorldEdit 7.3.1 se descartó del entorno Java 17; se comprobó 7.2.15 en su lugar.
 
@@ -52,10 +52,12 @@ En 26.3, los registros de crafteo muestran 16 amuletos de cantidad uno con 16 id
 
 El usuario también confirmó que el resource pack se ve en su cliente 26.3. La adaptación del ZIP y su servidor HTTP local pertenecen al entorno de pruebas; no se ha validado todavía una distribución pública única del pack ni su descarga en todas las versiones.
 
+La [validación real de WorldGuard](protection-validation-2026-11-24.md) registra 30 interacciones: el cofre denegado conserva objetos, cargas y cooldown, y el reintento permitido funciona. Mesa, piedra y aire se comportan según la decisión real del evento; estas flags no son una prohibición universal del dash. Se recuperaron inventario, posición, estado y OP y se retiraron las regiones temporales. No hizo falta cambiar código de producción.
+
 ## Limitaciones y comprobaciones pendientes
 
 - La repetición de crafteo y uso de 1.20 y 26.3 está completada con las condiciones y límites del [registro del 2026-11-24](crafting-validation-2026-11-24.md). Esto no sustituye las comprobaciones pendientes siguientes.
-- Ejecutar la [matriz de protección](protection-tests.md) con un jugador sin OP ni bypass, dentro y fuera de una región temporal, en ambos servidores.
+- La [matriz de protección](protection-tests.md) está completada en ambas combinaciones. No se validaron todas las flags, otras protecciones ni una denegación real de `useItemInHand` al aire; esta última tiene cobertura simulada.
 - Comprobar visualmente dash, combo, caída, clima y cambios de contexto en cliente y servidor reales. La cobertura automática no sustituye esas observaciones.
 - Las flags `interact` y `use` no constituyen una prohibición universal del dash al aire. CelestialDash respeta las denegaciones del evento; no aporta una flag de movimiento de WorldGuard.
 - El contrato cubre las decisiones de protección disponibles al llegar al controlador HIGHEST; no garantiza revertir decisiones tomadas después por otro listener.
@@ -68,4 +70,4 @@ El usuario también confirmó que el resource pack se ve en su cliente 26.3. La 
 
 Paper 26.3 volvió a alcanzar `Done` con WorldGuard y WorldEdit. El launcher de Minecraft falló antes de abrir el cliente en dos intentos: mostró `0x80000003` y sus registros indicaron cierres repetidos del proceso gráfico (`GPU process isn't usable`). No se llegó a entrar en el servidor ni se ejecutaron los casos de región. Este fallo del launcher no demuestra un fallo de CelestialDash y no se ha atribuido a falta de RAM.
 
-Actualización posterior de la misma fecha: ambos clientes ya pudieron abrirse y se completó la repetición recogida en el [registro de crafteo y uso](crafting-validation-2026-11-24.md). El fallo del launcher anterior ya no bloquea esta validación. Crafteo, capacidad del inventario, ingredientes inválidos, identidades y cargas independientes están comprobados en ambos servidores. Las pruebas reales de protección y las demás comprobaciones manuales de mecánicas siguen abiertas.
+Actualización posterior de la misma fecha: ambos clientes ya pudieron abrirse y se completó la repetición recogida en el [registro de crafteo y uso](crafting-validation-2026-11-24.md). El fallo del launcher anterior ya no bloquea esta validación. Crafteo, capacidad del inventario, ingredientes inválidos, identidades y cargas independientes están comprobados en ambos servidores. Después se completó también la [matriz real de protección](protection-validation-2026-11-24.md). Las demás comprobaciones manuales de mecánicas siguen abiertas.
