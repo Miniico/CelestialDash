@@ -111,3 +111,7 @@ Paper 26.3: observadas extracciones normales y con Shift, con 16 amuletos y 16 i
 ## Seguimiento manual — 2026-11-24
 
 El usuario confirma que los casos guiados de crafteo funcionan en 26.3, incluidos inventario lleno/casi lleno e ingredientes inválidos. La matriz de 26.3 queda confirmada por el usuario. No se extiende esta confirmación a 1.20 ni a plugins de protección: esas comprobaciones continúan pendientes. Véase el [registro de pruebas](docs/amulet-crafting-tests.md).
+
+## Protecciones — preparación y pruebas automáticas (2026-11-24)
+
+WorldGuard y WorldEdit están instalados y su arranque junto a CelestialDash está verificado: Paper 1.20 con WorldGuard 7.0.9/WorldEdit 7.2.15/Java 17; Paper 26.3 con WorldGuard 7.0.21/WorldEdit 7.4.6/Java 25. Suite Maven: 111 pruebas aprobadas, incluidas 18 nuevas de contrato de interacción con protección simulada. El [protocolo de protección](docs/protection-tests.md) distingue estas comprobaciones de la prueba real dentro de una región WorldGuard, que sigue pendiente en ambas versiones. No se cierra todavía la tarea de protección ni la etapa 1.1.8.
