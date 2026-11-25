@@ -50,7 +50,7 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 
 **Objetivo:** comunicar mejor el estado de las mecánicas.
 
-- [x] Añadir una barra de acción configurable para el cooldown y la disponibilidad del segundo dash. Al sostener una lágrima, la barra indica si el dash está listo, cuánto dura la ventana del segundo impulso o cuántos segundos quedan de cooldown. Las 19 pruebas nuevas cubren configuración, cambios de estado, prioridad de avisos y recarga. La suite completa pasa 130 pruebas con Java 17. La comprobación visual en cliente sigue pendiente. [Configuración](README.md#configuration).
+- [x] Añadir una barra de acción configurable para el cooldown y la disponibilidad del segundo dash. Al sostener una lágrima, la barra indica si el dash está listo, cuánto dura la ventana del segundo impulso o cuántos segundos quedan de cooldown. Las 19 pruebas nuevas cubren configuración, cambios de estado, prioridad de avisos y recarga. La suite completa pasa 130 pruebas con Java 17. En el cliente 26.3 se vieron `Ready`, `Second dash » 3.6s`, el cooldown de `5s` y la vuelta a `Ready`. Al ejecutar el segundo impulso también se vio el cooldown de `9s`. Queda pendiente la comprobación visual en 1.20. [Configuración](README.md#configuration).
 - [ ] Reducir los mensajes repetidos del dash en el chat.
 - [ ] Mostrar las cargas restantes del amuleto de forma clara.
 - [ ] Mejorar la ayuda de comandos para jugadores y administradores.
