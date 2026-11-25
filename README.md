@@ -130,6 +130,7 @@ give-max-amount: 2304
 
 # Dash
 dash-cooldown-seconds: 10
+dash-success-chat-enabled: false
 dash-blacklist-worlds: [ ]
 dash-strength: 1.8
 dash-vertical-lift: 0.4
@@ -172,6 +173,10 @@ the remaining cooldown in whole seconds. Both countdowns round up. Dash and amul
 Set `dash-action-bar.only-while-holding-tear` to `false` to show the bar while a tear is anywhere in your inventory.
 Set `dash-action-bar.enabled` to `false` to turn the status bar off. The refresh interval accepts 1–20 ticks.
 Each message accepts `&` color codes and an empty string hides that state. Older configs use the defaults above.
+
+By default, the action bar handles dash feedback and successful dashes stay out of chat.
+Set `dash-success-chat-enabled: true` to also announce both impulses in chat. Turning the action bar off
+automatically restores these announcements. Customize their text with `messages.dash-used` and `messages.second-dash`.
 
 `uses` applies to newly crafted amulets. Existing amulets keep their current remaining charges. Set `enabled` to `false`
 to stop amulet use, or `recipe-enabled` to `false` to remove its crafting recipe. Set `chronicle.enabled` to `false` to

@@ -322,11 +322,9 @@ public class DashHandler implements Listener {
 
         startTrail(player);
 
-        // Different messages for first and second dash
-        if (secondDash) {
-            player.sendMessage(messages.getSecondDashMessage());
-        } else {
-            player.sendMessage(messages.getDashUsedMessage());
+        // The HUD provides normal success feedback. Keep chat when requested or when the HUD is off.
+        if (dashSettings.successChatEnabled() || !plugin.getSettings().actionBar().enabled()) {
+            player.sendMessage(secondDash ? messages.getSecondDashMessage() : messages.getDashUsedMessage());
         }
     }
 

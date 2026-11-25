@@ -20,6 +20,12 @@ drop-blacklist-worlds:
 # Dash cooldown per player (in seconds, 0 - 86400)
 dash-cooldown-seconds: 10
 
+# Also send first/second dash success messages in chat while the HUD is enabled.
+# false keeps chat quiet by default. Disabling dash-action-bar.enabled always restores
+# these chat messages, using messages.dash-used and messages.second-dash below.
+# Missing values use false initially and retain the previous value on reload.
+dash-success-chat-enabled: false
+
 # Dash status above the hotbar (supports & color codes).
 # Existing configurations without this section use these defaults.
 # Missing enabled/holding/interval values retain their previous value on reload.

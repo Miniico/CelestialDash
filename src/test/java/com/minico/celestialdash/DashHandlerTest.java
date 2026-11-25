@@ -2,6 +2,7 @@ package com.minico.celestialdash;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -21,10 +22,51 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DashHandlerTest {
 
     private CelestialDash plugin;
+
+    @ParameterizedTest
+    @CsvSource({"true, false, false", "true, true, true", "false, false, true", "false, true, true"})
+    void successChatHonorsTheSettingAndFallsBackWhenHudIsDisabled(
+            boolean hudEnabled, boolean successChatEnabled, boolean expectsChat) {
+        configureImmediateDash();
+        plugin.getConfig().set("double-dash.enabled", true);
+        plugin.getConfig().set("dash-action-bar.enabled", hudEnabled);
+        plugin.getConfig().set("dash-success-chat-enabled", successChatEnabled);
+        plugin.getConfig().set("messages.dash-used", "&aCustom first dash");
+        plugin.getConfig().set("messages.second-dash", "&bCustom second dash");
+        plugin.loadSettings();
+        plugin.getMessages().reload();
+        PlayerMock player = eligiblePlayerWithTear();
+
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+        assertEquals(expectsChat ? ChatColor.GREEN + "Custom first dash" : null, player.nextMessage());
+        assertNull(player.nextMessage(), "Each success sends at most one chat message");
+        assertEquals(1, TearUtils.countTears(player));
+
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+        assertEquals(expectsChat ? ChatColor.AQUA + "Custom second dash" : null, player.nextMessage());
+        assertNull(player.nextMessage());
+        assertEquals(0, TearUtils.countTears(player));
+        assertEquals(false, plugin.getDashHandler().isInDoubleDashWindow(player));
+    }
+
+    @Test
+    void reloadingTheSuccessChatSettingChangesTheNextDash() {
+        configureImmediateDash();
+        PlayerMock player = eligiblePlayerWithTear();
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+        assertNull(player.nextMessage());
+
+        plugin.getConfig().set("dash-success-chat-enabled", true);
+        plugin.loadSettings();
+        plugin.getDashHandler().onPlayerUseTear(rightClickAir(player, player.getInventory().getItemInMainHand()));
+        assertEquals(plugin.getMessages().getDashUsedMessage(), player.nextMessage());
+        assertNull(player.nextMessage());
+    }
 
     @ParameterizedTest
     @CsvSource({"0, 1", "-45, 0.7071067811865476", "45, 0.7071067811865476", "-90, 0", "90, 0"})
@@ -273,6 +315,7 @@ class DashHandlerTest {
     }
 
     private void configureImmediateDash() {
+        plugin.getConfig().set("chronicle.enabled", false);
         plugin.getConfig().set("dash-cooldown-seconds", 0);
         plugin.getConfig().set("dash-particle-enabled", false);
         plugin.getConfig().set("dash-sound-enabled", false);

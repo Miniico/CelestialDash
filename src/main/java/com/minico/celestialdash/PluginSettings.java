@@ -95,6 +95,7 @@ public final class PluginSettings {
                         new SoundSettings(true, Sound.ENTITY_PHANTOM_FLAP, 1.2f, 0.6f),
                         new TrailSettings(true, Particle.CLOUD, 20, 0.3, 0.4, 0.3, 0.01, 10, 1),
                         new DoubleDashSettings(true, 4_000L, 40, 1.2, 1.1),
+                        false,
                         Set.of()
                 ),
                 0,
@@ -197,6 +198,7 @@ public final class PluginSettings {
                         getBoundedDouble(config, logger, "double-dash.lift-multiplier",
                                 previousDoubleDash.liftMultiplier(), 10.0)
                 ),
+                config.getBoolean("dash-success-chat-enabled", previousDash.successChatEnabled()),
                 loadBlacklistedWorlds(config, "dash-blacklist-worlds")
         );
 
@@ -484,7 +486,23 @@ public final class PluginSettings {
                                SoundSettings sound,
                                TrailSettings trail,
                                DoubleDashSettings doubleDash,
+                               boolean successChatEnabled,
                                Set<String> blacklistedWorlds) {
+
+        /** Retains the constructor signature used by extensions before success chat became configurable. */
+        public DashSettings(long cooldownMs,
+                            double strength,
+                            double lift,
+                            int regenerationDurationTicks,
+                            int regenerationAmplifier,
+                            ParticleSettings impactParticle,
+                            SoundSettings sound,
+                            TrailSettings trail,
+                            DoubleDashSettings doubleDash,
+                            Set<String> blacklistedWorlds) {
+            this(cooldownMs, strength, lift, regenerationDurationTicks, regenerationAmplifier,
+                    impactParticle, sound, trail, doubleDash, false, blacklistedWorlds);
+        }
 
         public DashSettings {
             blacklistedWorlds = Set.copyOf(blacklistedWorlds);
