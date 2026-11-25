@@ -1,7 +1,5 @@
 package com.minico.celestialdash;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -91,20 +89,14 @@ public class DashHandler implements Listener {
         }
 
         if (!player.hasPermission("celestialdash.use")) {
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getNoUsePermissionMessage())
-            );
+            showFeedback(player, messages.getNoUsePermissionMessage());
             return;
         }
 
         PluginSettings.DashSettings dashSettings = plugin.getSettings().dash();
         if (dashSettings.isWorldBlacklisted(player.getWorld().getName())
                 && !player.hasPermission("celestialdash.bypass-dash-blacklist")) {
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getDashWorldDisabledMessage())
-            );
+            showFeedback(player, messages.getDashWorldDisabledMessage());
             return;
         }
 
@@ -136,10 +128,7 @@ public class DashHandler implements Listener {
                 long remaining = (cd - diff) / 1000L;
                 if (remaining < 1) remaining = 1;
 
-                player.spigot().sendMessage(
-                        ChatMessageType.ACTION_BAR,
-                        TextComponent.fromLegacyText(messages.formatCooldown(remaining))
-                );
+                showFeedback(player, messages.formatCooldown(remaining));
                 return;
             }
         }
@@ -149,20 +138,14 @@ public class DashHandler implements Listener {
         int slot = player.getInventory().getHeldItemSlot();
         if (slot == -1) {
             // The held slot is unavailable; do not consume an unrelated stack.
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getNoTearsMessage())
-            );
+            showFeedback(player, messages.getNoTearsMessage());
             return;
         }
 
         // Consume the tear before applying its movement effect. A slot changed by
         // another listener must not grant a dash without paying its cost.
         if (!TearUtils.tryConsumeTear(player, slot)) {
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getNoTearsMessage())
-            );
+            showFeedback(player, messages.getNoTearsMessage());
             return;
         }
 
@@ -186,6 +169,10 @@ public class DashHandler implements Listener {
 
         // Update last dash for cooldown
         lastDash.put(uuid, now);
+    }
+
+    private void showFeedback(Player player, String message) {
+        plugin.getDashActionBarHandler().showFeedback(player, message);
     }
 
     private void applyFallImmunity(UUID uuid) {
@@ -409,6 +396,11 @@ public class DashHandler implements Listener {
             return 0L;
         }
         return (long) Math.ceil((cooldownMs - elapsed) / 1000.0);
+    }
+
+    long getRemainingDoubleDashWindowMillis(Player player) {
+        Long end = comboWindowEnd.get(player.getUniqueId());
+        return end == null ? 0L : Math.max(0L, end - currentTimeMillis.getAsLong());
     }
 
     public boolean isInDoubleDashWindow(Player player) {

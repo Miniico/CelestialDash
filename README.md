@@ -136,6 +136,13 @@ dash-vertical-lift: 0.4
 double-dash:
   strength-multiplier: 1.2
   lift-multiplier: 1.1
+dash-action-bar:
+  enabled: true
+  only-while-holding-tear: true
+  update-interval-ticks: 5
+  ready: "&bCelestial Dash &7» &aReady"
+  cooldown: "&bCelestial Dash &7» &e%seconds%s"
+  second-dash: "&bSecond dash &7» &f%seconds%s"
 
 # Automatic first-join Chronicle
 chronicle:
@@ -157,6 +164,14 @@ celestial-amulet:
     - POISON
     - WITHER
 ```
+
+Hold a Celestial Tear in your main hand to see when the dash is ready. After the first dash, the bar shows
+the second-dash window in tenths of a second. Once that window closes or you use the second dash, it shows
+the remaining cooldown in whole seconds. Both countdowns round up. Dash and amulet warnings take priority for two seconds.
+
+Set `dash-action-bar.only-while-holding-tear` to `false` to show the bar while a tear is anywhere in your inventory.
+Set `dash-action-bar.enabled` to `false` to turn the status bar off. The refresh interval accepts 1–20 ticks.
+Each message accepts `&` color codes and an empty string hides that state. Older configs use the defaults above.
 
 `uses` applies to newly crafted amulets. Existing amulets keep their current remaining charges. Set `enabled` to `false`
 to stop amulet use, or `recipe-enabled` to `false` to remove its crafting recipe. Set `chronicle.enabled` to `false` to

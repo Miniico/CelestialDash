@@ -20,6 +20,19 @@ drop-blacklist-worlds:
 # Dash cooldown per player (in seconds, 0 - 86400)
 dash-cooldown-seconds: 10
 
+# Dash status above the hotbar (supports & color codes).
+# Existing configurations without this section use these defaults.
+# Missing enabled/holding/interval values retain their previous value on reload.
+# Missing message templates restore the defaults; an empty string hides that status.
+# %seconds% is rounded up for cooldowns and has one decimal for the second dash window.
+dash-action-bar:
+  enabled: true
+  only-while-holding-tear: true
+  update-interval-ticks: 5  # Refresh period (1 to 20 ticks; 20 ticks = 1 second)
+  ready: "&bCelestial Dash &7» &aReady"
+  cooldown: "&bCelestial Dash &7» &e%seconds%s"
+  second-dash: "&bSecond dash &7» &f%seconds%s"
+
 # Worlds where Celestial Dash cannot be used. Players with celestialdash.bypass-dash-blacklist bypass this list.
 dash-blacklist-worlds: []
 

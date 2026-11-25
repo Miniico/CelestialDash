@@ -1,7 +1,5 @@
 package com.minico.celestialdash;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -203,8 +201,7 @@ public class AmuletHandler implements Listener {
         return purified;
     }
 
-    @SuppressWarnings("deprecation") // Required for action-bar support on older target servers.
     private void sendActionBar(Player player, String message) {
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+        plugin.getDashActionBarHandler().showFeedback(player, message);
     }
 }

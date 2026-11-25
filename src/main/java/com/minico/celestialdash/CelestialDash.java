@@ -15,6 +15,7 @@ public class CelestialDash extends JavaPlugin {
 
     private Messages messages;
     private DashHandler dashHandler;
+    private DashActionBarHandler actionBarHandler;
     private DropHandler dropHandler;
     private AmuletHandler amuletHandler;
     private ResourcePackHandler resourcePackHandler;
@@ -32,12 +33,14 @@ public class CelestialDash extends JavaPlugin {
         messages.reload();
 
         dashHandler = new DashHandler(this, messages);
+        actionBarHandler = new DashActionBarHandler(this, dashHandler);
         dropHandler = new DropHandler(this);
         amuletHandler = new AmuletHandler(this, messages);
         resourcePackHandler = new ResourcePackHandler(this);
         chronicleHandler = new ChronicleHandler(this);
 
         Bukkit.getPluginManager().registerEvents(dashHandler, this);
+        Bukkit.getPluginManager().registerEvents(actionBarHandler, this);
         Bukkit.getPluginManager().registerEvents(dropHandler, this);
         Bukkit.getPluginManager().registerEvents(amuletHandler, this);
         Bukkit.getPluginManager().registerEvents(resourcePackHandler, this);
@@ -57,6 +60,7 @@ public class CelestialDash extends JavaPlugin {
             getLogger().info("PlaceholderAPI hook enabled.");
         }
 
+        actionBarHandler.start();
         dropHandler.start();
         amuletHandler.start();
         chronicleHandler.start();
@@ -65,6 +69,9 @@ public class CelestialDash extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (actionBarHandler != null) {
+            actionBarHandler.stop();
+        }
         if (dropHandler != null) {
             dropHandler.stop();
         }
@@ -85,6 +92,9 @@ public class CelestialDash extends JavaPlugin {
 
     public void loadSettings() {
         settings = PluginSettings.load(getConfig(), getLogger(), settings);
+        if (actionBarHandler != null) {
+            actionBarHandler.reload();
+        }
         warnAboutMissingV116Configuration();
     }
 
@@ -122,6 +132,10 @@ public class CelestialDash extends JavaPlugin {
 
     public DashHandler getDashHandler() {
         return dashHandler;
+    }
+
+    DashActionBarHandler getDashActionBarHandler() {
+        return actionBarHandler;
     }
 
     DropHandler getDropHandler() {
