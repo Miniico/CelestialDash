@@ -1,6 +1,8 @@
 # Interacciones reales con WorldGuard — 2026-11-24
 
-Estado: matriz completada en los dos entornos siguientes. No hizo falta modificar código de producción. El hito 1.1.8 sigue abierto por otras comprobaciones manuales.
+Estado: matriz completada en los dos entornos siguientes. No hizo falta modificar código de producción. El estado general del hito figura en el [informe de validación](validation-1.1.8.md).
+
+Actualización del 2026-11-25: las demás comprobaciones de la matriz de fiabilidad se completaron en el [registro de mecánicas](mechanics-validation-2026-11-25.md). La publicación de una versión estable sigue siendo independiente de estos ensayos.
 
 | Entorno | Java | WorldGuard | WorldEdit | Interacciones de mano principal |
 |---|---|---|---|---:|
@@ -62,7 +64,7 @@ Los registros completos permanecen locales en `plugins/CelestialProtectionProbe/
 - No se ensayó una blacklist de WorldGuard que deniegue `useItemInHand` al aire. Ese contrato tiene cobertura simulada entre las 18 pruebas de protección de Maven.
 - La observación HIGH es anterior a CelestialDash; no garantiza revertir cambios que otro listener haga después de HIGHEST.
 - La recuperación de bloques está respaldada por el seguimiento y finalización de la herramienta; no se realizó un segundo barrido independiente de todo el volumen tras apagar el servidor. Los tags NBT ausentes no se consideran comprobados por lectura independiente.
-- La invulnerabilidad y la arena controlada no validan daño natural, inmunidad de caída, combo, clima ni todos los cambios de contexto. Esa matriz manual sigue pendiente.
+- La invulnerabilidad y la arena controlada de esta prueba de protección no validan daño natural, inmunidad de caída, combo, clima ni todos los cambios de contexto. Esas comprobaciones se documentan por separado en el [registro de mecánicas del 2026-11-25](mechanics-validation-2026-11-25.md).
 - El último `verify` de producción sigue siendo 111 pruebas aprobadas. No se repitió por este cambio documental ni se publicó una release.
 
 Véanse el [protocolo de protección](protection-tests.md), el [informe del hito](validation-1.1.8.md) y el [roadmap](../ROADMAP.md).

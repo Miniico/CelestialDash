@@ -1,8 +1,8 @@
 # Validación del hito 1.1.8
 
-Actualizado: 2026-11-24. Código de referencia: [f4cc8d1](https://github.com/Miniico/CelestialDash/commit/f4cc8d124f39d8bdcadbd2c3b6abed94a8805136), en la [PR de desarrollo #1](https://github.com/Miniico/CelestialDash/pull/1).
+Actualizado: 2026-11-25. Código de referencia: [f4cc8d1](https://github.com/Miniico/CelestialDash/commit/f4cc8d124f39d8bdcadbd2c3b6abed94a8805136), en la [PR de desarrollo #1](https://github.com/Miniico/CelestialDash/pull/1).
 
-Estado: desarrollo con validación parcial. Este informe publica los resultados disponibles; no anuncia una versión estable ni cierra el hito. Los metadatos Maven y `plugin.yml` todavía identifican el plugin como 1.1.7. El nombre local `CelestialDash-1.1.8-dev.jar` es una etiqueta de pruebas, no una versión publicada.
+Estado: matriz de fiabilidad completada en Paper 1.20 y 26.3, con los límites descritos. La PR continúa en borrador y este informe no anuncia una versión estable. Los metadatos Maven y `plugin.yml` todavía identifican el plugin como 1.1.7. El nombre local `CelestialDash-1.1.8-dev.jar` es una etiqueta de pruebas, no una versión publicada.
 
 ## Cambios y decisiones
 
@@ -39,6 +39,8 @@ Los casos de protección despachan eventos MockBukkit a un listener LOW simulado
 
 Las pruebas de combo desactivan estela, partículas, sonido y regeneración. Comprueban el estado del combo, cooldown e inmunidad; la cancelación visual de la estela requiere observación real.
 
+La repetición real del 2026-11-25 conservó la configuración de movimiento y sus efectos. El cliente mostró movimiento y partículas; la limpieza de la tarea de estela se verificó mediante lectura observacional del estado. Esto no certifica cada detalle visual ni el sonido en todas las configuraciones de cliente.
+
 ## Servidores y evidencia manual
 
 | Entorno local | Arranque conjunto | Crafteo e identidades | Interacción en región WorldGuard |
@@ -54,20 +56,22 @@ El usuario también confirmó que el resource pack se ve en su cliente 26.3. La 
 
 La [validación real de WorldGuard](protection-validation-2026-11-24.md) registra 30 interacciones: el cofre denegado conserva objetos, cargas y cooldown, y el reintento permitido funciona. Mesa, piedra y aire se comportan según la decisión real del evento; estas flags no son una prohibición universal del dash. Se recuperaron inventario, posición, estado y OP y se retiraron las regiones temporales. No hizo falta cambiar código de producción.
 
+La [matriz real de mecánicas del 2026-11-25](mechanics-validation-2026-11-25.md) está completada en ambos entornos: cinco ángulos en el primer y segundo impulso, consumo exacto, tercer intento rechazado, ventana caducada y recuperación natural del cooldown, tres caídas físicas por versión, doce escenarios de contexto por versión y drops meteorológicos. Los cambios de contexto conservan el instante del cooldown; la tormenta produce lágrimas y reconectar no adelanta el siguiente drop. Para aislar la condición meteorológica se usó probabilidad temporal 1 en memoria y se recuperó 0.03 al terminar. Los archivos de configuración permanecen idénticos a las copias iniciales.
+
 ## Limitaciones y comprobaciones pendientes
 
 - La repetición de crafteo y uso de 1.20 y 26.3 está completada con las condiciones y límites del [registro del 2026-11-24](crafting-validation-2026-11-24.md). Esto no sustituye las comprobaciones pendientes siguientes.
 - La [matriz de protección](protection-tests.md) está completada en ambas combinaciones. No se validaron todas las flags, otras protecciones ni una denegación real de `useItemInHand` al aire; esta última tiene cobertura simulada.
-- Comprobar visualmente dash, combo, caída, clima y cambios de contexto en cliente y servidor reales. La cobertura automática no sustituye esas observaciones.
+- La matriz real de movimiento, caída, clima y contexto está completada con los límites del informe enlazado: las fronteras exactas de tiempo, una segunda caída física dentro de la misma inmunidad y la exclusión de otros daños mantienen cobertura automática. La lectura de la tarea de estela no equivale a una revisión visual exhaustiva.
 - Las flags `interact` y `use` no constituyen una prohibición universal del dash al aire. CelestialDash respeta las denegaciones del evento; no aporta una flag de movimiento de WorldGuard.
 - El contrato cubre las decisiones de protección disponibles al llegar al controlador HIGHEST; no garantiza revertir decisiones tomadas después por otro listener.
 - La conservación del cooldown entre cambios de contexto es en memoria. No se garantiza su persistencia tras reiniciar el plugin o el servidor.
 - No se ha demostrado esta matriz funcional en Spigot, Purpur ni todas las versiones intermedias. Los requisitos generales del README no son una lista de combinaciones probadas.
 - Quedan pendientes la validación completa de crónica, PlaceholderAPI y descarga del pack en las combinaciones anunciadas, así como la instalación limpia y actualización siguiendo solo la documentación.
-- No se ha publicado una release 1.1.8 ni se ha completado el criterio de salida del [roadmap](../ROADMAP.md).
+- El [roadmap](../ROADMAP.md) marca completada la matriz de fiabilidad de estas dos combinaciones. No se ha publicado una release 1.1.8; quedan revisión e integración de la PR y preparación de los artefactos de publicación.
 
 ## Intento de prueba en cliente — 2026-11-24
 
 Paper 26.3 volvió a alcanzar `Done` con WorldGuard y WorldEdit. El launcher de Minecraft falló antes de abrir el cliente en dos intentos: mostró `0x80000003` y sus registros indicaron cierres repetidos del proceso gráfico (`GPU process isn't usable`). No se llegó a entrar en el servidor ni se ejecutaron los casos de región. Este fallo del launcher no demuestra un fallo de CelestialDash y no se ha atribuido a falta de RAM.
 
-Actualización posterior de la misma fecha: ambos clientes ya pudieron abrirse y se completó la repetición recogida en el [registro de crafteo y uso](crafting-validation-2026-11-24.md). El fallo del launcher anterior ya no bloquea esta validación. Crafteo, capacidad del inventario, ingredientes inválidos, identidades y cargas independientes están comprobados en ambos servidores. Después se completó también la [matriz real de protección](protection-validation-2026-11-24.md). Las demás comprobaciones manuales de mecánicas siguen abiertas.
+Actualización posterior de la misma fecha: ambos clientes ya pudieron abrirse y se completó la repetición recogida en el [registro de crafteo y uso](crafting-validation-2026-11-24.md). El fallo del launcher anterior ya no bloquea esta validación. Crafteo, capacidad del inventario, ingredientes inválidos, identidades y cargas independientes están comprobados en ambos servidores. Después se completó también la [matriz real de protección](protection-validation-2026-11-24.md). El 2026-11-25 se completó la [matriz real de las demás mecánicas](mechanics-validation-2026-11-25.md).

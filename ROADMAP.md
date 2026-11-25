@@ -1,6 +1,6 @@
 # Roadmap de CelestialDash
 
-Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-11-24.
+Plan de desarrollo a partir de la versión 1.1.7. Actualizado: 2026-11-25.
 
 La prioridad es consolidar las mecánicas actuales, validar su experiencia con jugadores y después ampliar la progresión. Las versiones son objetivos de planificación; no tienen fechas de entrega comprometidas.
 
@@ -21,14 +21,16 @@ La prioridad es consolidar las mecánicas actuales, validar su experiencia con j
 - [x] Probar el segundo dash, sus multiplicadores y el consumo de una lágrima por impulso (pruebas automatizadas).
 - [x] Probar el rechazo de un tercer clic durante el cooldown y la caducidad de la ventana del combo (pruebas automatizadas).
 - [x] Probar la inmunidad de caída y su expiración (pruebas automatizadas).
-- [x] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad (pruebas automatizadas; comprobación manual pendiente).
+- [x] Probar reconexión, muerte, teletransporte y cambio de mundo durante el combo o la inmunidad. Cobertura automática y doce escenarios reales por servidor, incluidos rotación y teletransporte cancelado; se conserva el cooldown. Véase el [registro del 2026-11-25](docs/mechanics-validation-2026-11-25.md).
 - [x] Verificar en servidor real el crafteo con Shift, varios amuletos consecutivos e inventarios casi llenos. Repetido en 1.20 y 26.3 con clics del cliente y auditoría: capacidad del inventario, ingredientes inválidos y consumo exacto. En 1.20 la secuencia múltiple fue 3 normales + 5 con Shift; en 26.3 un Shift extrajo 8. Véase el [registro del 2026-11-24](docs/crafting-validation-2026-11-24.md).
 - [x] Verificar que los amuletos conservan identidades y cargas independientes. Dos amuletos crafteados consecutivamente en cada servidor conservan UUID distintos; al usar uno pasa de 3 a 2 cargas y el otro mantiene 3. Comprobado en 1.20 y 26.3 con auditoría del uso real.
 - [x] Comprobar interacciones con plugins de protección en servidor real. Matriz WorldGuard completada en 1.20 y 26.3 sin OP ni bypass: cofre denegado, reintentos permitidos sin cooldown gastado y objetos conservados en interacciones vanilla. Véase el [registro y sus límites](docs/protection-validation-2026-11-24.md).
-- [ ] Completar las comprobaciones manuales de dirección, segundo dash, cooldown, caída, clima y cambios de contexto en ambos servidores. La cobertura automática y los impulsos aislados de la prueba de protección no completan esta matriz.
+- [x] Completar las comprobaciones manuales de dirección, segundo dash, cooldown, caída, clima y cambios de contexto en ambos servidores. Cinco ángulos en ambos impulsos, tercero rechazado, ventana caducada, tres caídas físicas, doce contextos y drops solo en tormenta con cooldown conservado al reconectar. El [informe real](docs/mechanics-validation-2026-11-25.md) distingue resultados, intervenciones del auxiliar y límites.
 - [x] Publicar los resultados de validación, los cambios y las limitaciones conocidas. Véase el [informe de validación 1.1.8](docs/validation-1.1.8.md), que distingue resultados automáticos, comprobaciones reales y tareas pendientes; no anuncia una release ni cierra el hito.
 
 **Criterio de salida:** pruebas automáticas aprobadas y comprobaciones en servidor real sin pérdidas ni duplicaciones de objetos en los escenarios anteriores.
+
+**Estado de validación (2026-11-25):** la matriz de fiabilidad descrita está completada en Paper 1.20 y 26.3, junto al último resultado de 111 pruebas automáticas aprobadas. Esto permite continuar la etapa de experiencia de juego. La PR sigue en borrador y aún no se ha publicado una release 1.1.8; otras combinaciones y la distribución completa corresponden a 1.2.0.
 
 **Decisión sobre cambios de contexto:**
 
@@ -123,4 +125,8 @@ Completados en ambos servidores el crafteo normal, dos amuletos consecutivos, Sh
 
 ## Protecciones — matriz real completada (2026-11-24)
 
-Completados 14 casos lógicos en cada servidor, con 30 clics reales en total por una repetición adicional en 1.20. WorldGuard deniega el cofre sin gastar lágrimas, cargas ni cooldown; el reintento fuera de la región funciona. Mesa, piedra y aire se comportan según la decisión real del evento: estas flags no prohíben todo uso de CelestialDash dentro de una región. Inventarios, posición, estado y OP recuperados; regiones temporales retiradas y servidores detenidos. El [informe de protección](docs/protection-validation-2026-11-24.md) registra resultados, repetición y límites. Lo siguiente es completar la matriz manual de movimiento, caída, clima y cambios de contexto; no se cierra aún 1.1.8.
+Completados 14 casos lógicos en cada servidor, con 30 clics reales en total por una repetición adicional en 1.20. WorldGuard deniega el cofre sin gastar lágrimas, cargas ni cooldown; el reintento fuera de la región funciona. Mesa, piedra y aire se comportan según la decisión real del evento: estas flags no prohíben todo uso de CelestialDash dentro de una región. Inventarios, posición, estado y OP recuperados; regiones temporales retiradas y servidores detenidos. El [informe de protección](docs/protection-validation-2026-11-24.md) registra resultados, repetición y límites. La matriz manual de las demás mecánicas se completó al día siguiente.
+
+## Mecánicas — matriz real completada (2026-11-25)
+
+Completadas dirección, combo, cooldown, caída, clima y cambios de contexto en Paper 1.20 y 26.3. La auditoría confirma consumos exactos, seis caídas físicas en total y doce escenarios de contexto por versión, sin anomalías detectadas. La tormenta produce lágrimas y la reconexión no adelanta el siguiente drop; lluvia normal y cielo despejado no producen lágrimas en las oportunidades observadas con probabilidad temporal 1. No hizo falta modificar código de producción. Se recuperaron los objetos y estado originales y se conservaron las copias de seguridad. El [registro completo](docs/mechanics-validation-2026-11-25.md) documenta los límites y la recuperación. Siguiente trabajo de producto: barra de acción configurable para cooldown y disponibilidad del segundo dash, en 1.1.9.
