@@ -59,7 +59,7 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 
 **Objetivo:** facilitar la instalación, actualización y publicación.
 
-- [ ] Automatizar la generación y publicación del JAR y del resource pack.
+- [x] Automatizar la generación y publicación del JAR y del resource pack. El flujo de [publicación](.github/workflows/release.yml) compila y prueba el plugin, genera el ZIP desde sus fuentes y comprueba ambos archivos antes de hacer pública la versión.
 - [ ] Generar el SHA-1 a partir del ZIP publicado.
 - [ ] Establecer una única fuente oficial del resource pack y documentar su relación con CelestialDashPack.
 - [ ] Publicar una tabla de versiones de Minecraft, Java y servidores realmente probadas.

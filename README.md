@@ -3,7 +3,7 @@
 Storm-powered movement and progression for Minecraft servers. During thunderstorms, players can obtain Celestial Tears,
 use them to perform fast aerial dashes, and craft a Celestial Amulet for emergency purification.
 
-**Version:** 1.1.7
+**Version:** 1.1.8
 
 **License:** MIT
 
@@ -11,9 +11,9 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 ## Roadmap
 
-See [the development roadmap](ROADMAP.md) for planned releases, task checklists, and completion criteria. The next milestone is 1.1.8: reliability of dashes, drops, and amulets.
+See [the development roadmap](ROADMAP.md) for planned releases and [the 1.1.8 release notes](releases/1.1.8.md) for the changes in this build.
 
-The [1.1.8 validation report](docs/validation-1.1.8.md) records implemented changes, automated results, and completed real-server crafting, WorldGuard and mechanics matrices on Paper 1.20 and 26.3, with explicit scope limits. Release preparation remains open.
+The [1.1.8 validation report](docs/validation-1.1.8.md) records the real-server crafting, WorldGuard and mechanics checks on Paper 1.20 and 26.3.
 
 ## Features
 
@@ -208,21 +208,22 @@ The `messages` section supports Minecraft `&` color codes and can be used to cus
 Existing configurations are never auto-overwritten: on startup and reload, the plugin warns if the v1.1.6 resource-pack
 or CustomModelData keys are missing.
 
+## Building a release
+
+Set the project version in `pom.xml`, build the ZIP from its source with `python3 scripts/package_resource_pack.py target/pack.zip`, and copy the printed SHA-1 to `src/main/resources/config.yml` when the pack changes. Add the player-facing release notes in `releases/<version>.md`. Adding that new file to `main` requests publication for the matching project version. Alternatively, push a `v<version>` tag for the release commit. Use the manual **Release / dry run** action to test the selected ref and download its artifacts before publication.
+
+GitHub Actions runs the Maven tests, checks the version embedded in the JAR and the pack URL and checksum, stages both files in a draft, and verifies the uploaded files before publishing.
+
 ## Optional Resource Pack
 
 The editable pack source is in [`resource-pack/CelestialDash-Resource-Pack`](resource-pack/CelestialDash-Resource-Pack).
-The release-ready archive is [`resource-pack/CelestialDash-Resource-Pack.zip`](resource-pack/CelestialDash-Resource-Pack.zip);
-do not extract it. It
-gives the Celestial Tear and Celestial Amulet their own 32x32 pixel-art textures without changing vanilla Ghast Tears or
-Nautilus Shells.
+Download the ZIP attached to your [plugin release](https://github.com/Miniico/CelestialDash/releases). It gives the Celestial Tear and Celestial Amulet their own 32×32 textures and preserves the vanilla Ghast Tear and Nautilus Shell.
 
-The plugin supports Minecraft 1.20 and newer, while the bundled resource pack is currently verified for clients from
-1.20 through 1.21.3 and for 1.21.4+ through resource-pack format 88. Check the pack's own README before assuming
-compatibility with a future Minecraft format.
+The pack declares resource formats 15 through 97.1, with legacy models and an overlay for modern clients. See the [pack notes](resource-pack/CelestialDash-Resource-Pack/README.md) for the client checks and their scope.
 
-### Use the Bundled Pack with Google Drive
+### Enable the release pack
 
-The default `config.yml` already contains the bundled pack's direct Google Drive URL, SHA-1, and model data values.
+The default `config.yml` contains the direct download URL for this release, its SHA-1 and the model data values.
 Resource-pack delivery remains disabled by default.
 
 To use the bundled pack on a new installation, open `plugins/CelestialDash/config.yml` and change only this option:
@@ -245,8 +246,8 @@ tear-custom-model-data: 22001
 
 resource-pack:
   enabled: true
-  url: "https://drive.google.com/uc?export=download&id=1FXO5hS3Rg7FAUsn6Oq6ZdENKq0hBYS9C"
-  sha1: "21ddb9da21e3f74b41514d662700a25c2b10a750"
+  url: "https://github.com/Miniico/CelestialDash/releases/download/v1.1.8/CelestialDash-Resource-Pack-1.1.8.zip"
+  sha1: "71614664213a919ec735258bea6c9940f5ffe245"
   required: false
   prompt: "&bThis server uses the CelestialDash resource pack."
 
@@ -259,7 +260,7 @@ celestial-amulet:
 request or its download fails; the plugin does not add a separate manual kick.
 
 Before enabling the pack, open the direct URL in a private browser window. It must download the ZIP without requiring a
-Google sign-in or showing a Drive page. The configured SHA-1 belongs to the bundled ZIP and lets Minecraft reuse its
+sign-in. The configured SHA-1 belongs to the release ZIP and lets Minecraft reuse its
 cached copy instead of downloading it again when the file has not changed.
 
 Minecraft applies server-sent packs automatically; players do not need to place them in their normal `resourcepacks`

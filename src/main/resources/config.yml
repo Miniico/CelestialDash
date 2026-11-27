@@ -58,15 +58,15 @@ tear-custom-model-data: 22001
 placeholder-tear-cache-max-entries: 256
 
 # Optional server resource pack delivery settings.
-# The bundled Google Drive URL and SHA-1 are ready to use.
+# The URL and SHA-1 identify the pack attached to this plugin release.
 # Set enabled to true to send the bundled pack to players when they join.
 # Leave required false to let players decline the download; true disconnects players who decline it.
 # sha1 must contain the ZIP's 40-character SHA-1 when enabled is true.
 # Players receive the pack when they join; reload this configuration before new players join.
 resource-pack:
   enabled: false
-  url: "https://drive.google.com/uc?export=download&id=1FXO5hS3Rg7FAUsn6Oq6ZdENKq0hBYS9C"
-  sha1: "21ddb9da21e3f74b41514d662700a25c2b10a750"
+  url: "https://github.com/Miniico/CelestialDash/releases/download/v${project.version}/CelestialDash-Resource-Pack-${project.version}.zip"
+  sha1: "71614664213a919ec735258bea6c9940f5ffe245"
   required: false
   prompt: "&bThis server uses the CelestialDash resource pack."
 
