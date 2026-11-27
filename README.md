@@ -112,6 +112,11 @@ Fire is always extinguished. The amulet only consumes a charge when it successfu
 uses, cooldown, and potion-effect list are configurable. Every crafted amulet has a unique internal identity, so
 separate amulets do not stack.
 
+Hover over an amulet to see its remaining uses and its original capacity. After each successful
+purification, the action bar above the hotbar shows the updated count (for example, `2/3`).
+Spending the last charge removes that amulet and displays a depleted notice with `0/3`.
+Other amulets keep their own charges.
+
 ## Configuration
 
 All settings are in `plugins/CelestialDash/config.yml`. After editing the file, run `/celestialdash reload`.
@@ -178,7 +183,11 @@ By default, the action bar handles dash feedback and successful dashes stay out 
 Set `dash-success-chat-enabled: true` to also announce both impulses in chat. Turning the action bar off
 automatically restores these announcements. Customize their text with `messages.dash-used` and `messages.second-dash`.
 
-`uses` applies to newly crafted amulets. Existing amulets keep their current remaining charges. Set `enabled` to `false`
+`uses` sets the capacity for newly crafted amulets. Older amulets recover their capacity from the
+original count in their lore. If that count is missing or invalid, the plugin uses the larger of the
+current setting and the charges still on the item. Customize the two action-bar notices with
+`messages.amulet-used-action-bar` and `messages.amulet-depleted-action-bar`. Both accept
+`%uses%` and `%max-uses%`. Set `enabled` to `false`
 to stop amulet use, or `recipe-enabled` to `false` to remove its crafting recipe. Set `chronicle.enabled` to `false` to
 stop automatic first-join Chronicle delivery; it does not disable player recovery or the explicit admin reissue command.
 `chronicle.notification-enabled` and `chronicle.delivery-sound-enabled` control the delivery announcement, while

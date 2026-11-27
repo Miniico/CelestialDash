@@ -41,6 +41,8 @@ public class Messages {
     private String amuletCooldownTemplate;
     private String amuletUsedTemplate;
     private String amuletDepletedMessage;
+    private String amuletUsedActionBarTemplate;
+    private String amuletDepletedActionBarTemplate;
 
     public Messages(CelestialDash plugin) {
         this.plugin = plugin;
@@ -209,12 +211,22 @@ public class Messages {
 
         amuletUsedTemplate = color(plugin.getConfig().getString(
                 "messages.amulet-used",
-                "&bCelestial energy purifies you. &7Uses left: &f%uses%"
+                "&bCelestial energy purifies you."
         ));
 
         amuletDepletedMessage = color(plugin.getConfig().getString(
                 "messages.amulet-depleted",
                 "&7The Celestial Amulet has lost its light."
+        ));
+
+        // Runtime fallbacks also give existing server configurations charge feedback.
+        amuletUsedActionBarTemplate = color(plugin.getConfig().getString(
+                "messages.amulet-used-action-bar",
+                "&bPurified! &7Celestial Amulet: &f%uses%/%max-uses% &7charges"
+        ));
+        amuletDepletedActionBarTemplate = color(plugin.getConfig().getString(
+                "messages.amulet-depleted-action-bar",
+                "&cCelestial Amulet depleted! &f%uses%/%max-uses% &7charges"
         ));
     }
 
@@ -346,6 +358,23 @@ public class Messages {
 
     public String formatAmuletUsed(int uses) {
         return amuletUsedTemplate.replace("%uses%", String.valueOf(uses));
+    }
+
+    public String formatAmuletUsed(int uses, int maxUses) {
+        return formatAmuletUsed(uses).replace("%max-uses%", String.valueOf(maxUses));
+    }
+
+    public String formatAmuletUsedActionBar(int uses, int maxUses) {
+        return formatAmuletCharges(amuletUsedActionBarTemplate, uses, maxUses);
+    }
+
+    public String formatAmuletDepletedActionBar(int maxUses) {
+        return formatAmuletCharges(amuletDepletedActionBarTemplate, 0, maxUses);
+    }
+
+    private String formatAmuletCharges(String template, int uses, int maxUses) {
+        return template.replace("%uses%", String.valueOf(uses))
+                .replace("%max-uses%", String.valueOf(maxUses));
     }
 
     public String getAmuletDepletedMessage() {

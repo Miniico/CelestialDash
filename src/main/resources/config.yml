@@ -183,5 +183,10 @@ messages:
   amulet-disabled: "&cThe Celestial Amulet is disabled."
   amulet-no-effects: "&7The amulet finds nothing to purify."
   amulet-cooldown: "&7Celestial Amulet ready in &b%seconds%s&7."
-  amulet-used: "&bCelestial energy purifies you. &7Uses left: &f%uses%"
+  # Chat messages remain independent of the HUD; %uses% is still supported in amulet-used.
+  amulet-used: "&bCelestial energy purifies you."
   amulet-depleted: "&7The Celestial Amulet has lost its light."
+  # Amulet HUD feedback after purification; counts belong to the individual amulet.
+  # Both templates support %uses% and %max-uses%, including 0/Y on the last charge.
+  amulet-used-action-bar: "&bPurified! &7Celestial Amulet: &f%uses%/%max-uses% &7charges"
+  amulet-depleted-action-bar: "&cCelestial Amulet depleted! &f%uses%/%max-uses% &7charges"

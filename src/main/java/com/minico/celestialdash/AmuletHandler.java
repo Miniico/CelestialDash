@@ -146,12 +146,15 @@ public class AmuletHandler implements Listener {
 
         // Only consume the Amulet and block the vanilla interaction after it purified something.
         event.setCancelled(true);
+        int maxUses = CelestialAmulet.getMaxUses(item);
         int remainingUses = CelestialAmulet.consumeUse(item);
         if (remainingUses == 0) {
             player.getInventory().setItemInMainHand(null);
+            sendActionBar(player, messages.formatAmuletDepletedActionBar(maxUses));
             player.sendMessage(messages.getAmuletDepletedMessage());
         } else {
-            player.sendMessage(messages.formatAmuletUsed(remainingUses));
+            sendActionBar(player, messages.formatAmuletUsedActionBar(remainingUses, maxUses));
+            player.sendMessage(messages.formatAmuletUsed(remainingUses, maxUses));
         }
 
         lastUse.put(player.getUniqueId(), now);
