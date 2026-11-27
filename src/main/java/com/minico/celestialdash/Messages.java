@@ -3,6 +3,8 @@ package com.minico.celestialdash;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+
 public class Messages {
 
     private final CelestialDash plugin;
@@ -31,6 +33,9 @@ public class Messages {
     private String resourcePackInvalidConfigurationMessage;
     private String resourcePackSendFailedMessage;
     private String usageHeaderMessage;
+    private String usageHelpTemplate;
+    private String usageExampleTemplate;
+    private Map<String, String> usageDescriptions;
     private String usageChronicleTemplate;
     private String usageReloadTemplate;
     private String usageGiveTemplate;
@@ -168,6 +173,25 @@ public class Messages {
                 "messages.usage-header",
                 "&eUsage:"
         ));
+
+        // Runtime defaults keep help available on installations with older config files.
+        usageHelpTemplate = color(plugin.getConfig().getString(
+                "messages.usage-help",
+                "&7 /%label% help &8- &fShow commands you can use"
+        ));
+
+        usageExampleTemplate = color(plugin.getConfig().getString(
+                "messages.usage-example",
+                "&8   Example: &f/%label% %command%"
+        ));
+
+        usageDescriptions = Map.of(
+                "chronicle", usageDescription("chronicle", "Recover your Chronicle"),
+                "reload", usageDescription("reload", "Reload the plugin configuration"),
+                "give", usageDescription("give", "Give Celestial Tears to a player"),
+                "chronicle-give", usageDescription("chronicle-give", "Give a Chronicle copy to a player"),
+                "pack-send", usageDescription("pack-send", "Send the configured resource pack to a player")
+        );
 
         usageChronicleTemplate = color(plugin.getConfig().getString(
                 "messages.usage-chronicle",
@@ -322,6 +346,23 @@ public class Messages {
 
     public String getUsageHeaderMessage() {
         return usageHeaderMessage;
+    }
+
+    public String formatUsageHelp(String label) {
+        return usageHelpTemplate.replace("%label%", label);
+    }
+
+    public String formatUsageExample(String label, String command) {
+        return usageExampleTemplate.replace("%label%", label).replace("%command%", command);
+    }
+
+    public String describeUsage(String command, String usage) {
+        return usage + usageDescriptions.getOrDefault(command, "");
+    }
+
+    private String usageDescription(String command, String fallback) {
+        return color(plugin.getConfig().getString("messages.usage-" + command + "-description",
+                " &8- &f" + fallback));
     }
 
     public String formatUsageChronicle(String label) {

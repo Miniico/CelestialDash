@@ -50,7 +50,7 @@ public class CelestialDash extends JavaPlugin {
         PluginCommand command = getCommand("celestialdash");
         if (command != null) {
             command.setExecutor(new CelestialCommand(this, messages, chronicleHandler));
-            command.setTabCompleter(new CelestialTabCompleter());
+            command.setTabCompleter(new CelestialTabCompleter(this));
         } else {
             getLogger().severe("Command 'celestialdash' is not defined in plugin.yml!");
         }

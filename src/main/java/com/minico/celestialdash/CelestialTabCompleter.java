@@ -7,33 +7,45 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class CelestialTabCompleter implements TabCompleter {
+
+    private final CelestialDash plugin;
+
+    public CelestialTabCompleter() {
+        this(null);
+    }
+
+    public CelestialTabCompleter(CelestialDash plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command command,
                                       @NotNull String alias,
                                       @NotNull String[] args) {
-        if (args.length == 1
-                && sender.hasPermission("celestialdash.chronicle")
-                && startsWith("chronicle", args[0])) {
-            if (!sender.hasPermission("celestialdash.admin")) {
-                return List.of("chronicle");
+        boolean admin = sender.hasPermission("celestialdash.admin");
+        if (args.length == 1) {
+            List<String> candidates = new ArrayList<>();
+            candidates.add("help");
+            if (admin || (sender instanceof Player && sender.hasPermission("celestialdash.chronicle"))) {
+                candidates.add("chronicle");
             }
+            if (admin) {
+                candidates.addAll(List.of("give", "reload", "pack"));
+            }
+            return complete(args[0], candidates);
         }
-        if (!sender.hasPermission("celestialdash.admin")) {
+        if (!admin) {
             return List.of();
         }
 
-        if (args.length == 1) {
-            return complete(args[0], List.of("give", "chronicle", "reload", "pack"));
-        }
-
         if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
-            return completeOnlinePlayerNames(args[1]);
+            return completeOnlinePlayerNames(sender, args[1]);
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("chronicle")) {
@@ -45,22 +57,28 @@ public class CelestialTabCompleter implements TabCompleter {
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("pack") && args[1].equalsIgnoreCase("send")) {
-            return completeOnlinePlayerNames(args[2]);
+            return completeOnlinePlayerNames(sender, args[2]);
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("chronicle") && args[1].equalsIgnoreCase("give")) {
-            return completeOnlinePlayerNames(args[2]);
+            return completeOnlinePlayerNames(sender, args[2]);
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
-            return complete(args[2], List.of("1", "16", "64"));
+            int maxAmount = plugin == null ? PluginSettings.defaults().giveMaxAmount()
+                    : plugin.getSettings().giveMaxAmount();
+            return complete(args[2], List.of(1, 16, 64).stream()
+                    .filter(amount -> amount <= maxAmount)
+                    .map(String::valueOf)
+                    .toList());
         }
 
         return List.of();
     }
 
-    private List<String> completeOnlinePlayerNames(String input) {
+    private List<String> completeOnlinePlayerNames(CommandSender sender, String input) {
         return Bukkit.getOnlinePlayers().stream()
+                .filter(player -> !(sender instanceof Player viewer) || viewer.canSee(player))
                 .map(Player::getName)
                 .filter(name -> startsWith(name, input))
                 .sorted(String.CASE_INSENSITIVE_ORDER)

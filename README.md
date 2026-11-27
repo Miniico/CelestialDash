@@ -274,6 +274,11 @@ URL or pack revision.
 
 ## Commands
 
+Run `/celestialdash` or `/celestialdash help` to see the commands available to you.
+Players with the Chronicle permission see how to recover their book. Administrators also see
+examples for giving Tears, replacing a player's book and sending the resource pack. From the
+console, use an online player's name for `give`, `chronicle give` and `pack send`.
+
 | Command                                  | Permission                | Description                                                                                                                                                            |
 |------------------------------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/celestialdash chronicle`               | `celestialdash.chronicle` | Recovers a localized copy of *The Falling Sky* for yourself without resetting its one-time delivery marker. Subject to the configured recovery cooldown.               |
@@ -284,7 +289,7 @@ URL or pack revision.
 
 Aliases: `/cdash` and `/celestial`.
 
-Admin command tab completion is available for subcommands, online players, and common amounts.
+Tab completion follows the sender's permissions and the server's configured maximum give amount.
 
 ## Permissions
 

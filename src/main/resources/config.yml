@@ -175,11 +175,22 @@ messages:
   resource-pack-invalid-configuration: "&cThe resource-pack configuration is invalid. Check the server log."
   resource-pack-send-failed: "&cThe resource-pack request could not be sent. Check the server log."
   usage-header: "&eUsage:"
+  usage-help: "&7 /%label% help &8- &fShow commands you can use"
+  # Examples use the invoking player's name, or an online player for console.
+  # %command% includes arguments; examples always use one Tear (valid for every give-max-amount).
+  usage-example: "&8   Example: &f/%label% %command%"
   usage-chronicle: "&7 /%label% chronicle"
   usage-reload: "&7 /%label% reload"
   usage-give: "&7 /%label% give <player> <amount>"
   usage-chronicle-give: "&7 /%label% chronicle give <player>"
   usage-pack-send: "&7 /%label% pack send <player>"
+  # Appended to the corresponding usage line, including customized older templates.
+  # Set a description to "" if that usage line already explains the command.
+  usage-chronicle-description: " &8- &fRecover your Chronicle"
+  usage-reload-description: " &8- &fReload the plugin configuration"
+  usage-give-description: " &8- &fGive Celestial Tears to a player"
+  usage-chronicle-give-description: " &8- &fGive a Chronicle copy to a player"
+  usage-pack-send-description: " &8- &fSend the configured resource pack to a player"
   amulet-disabled: "&cThe Celestial Amulet is disabled."
   amulet-no-effects: "&7The amulet finds nothing to purify."
   amulet-cooldown: "&7Celestial Amulet ready in &b%seconds%s&7."

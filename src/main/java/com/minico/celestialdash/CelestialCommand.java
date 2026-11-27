@@ -8,11 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
 import java.util.Map;
 
 /**
  * Main command executor for /celestialdash
  * Subcommands:
+ *   /celestialdash help
  *   /celestialdash chronicle
  *   /celestialdash give <player> <amount>
  *   /celestialdash chronicle give <player>
@@ -36,6 +38,11 @@ public class CelestialCommand implements CommandExecutor {
                              @NotNull Command command,
                              @NotNull String label,
                              @NotNull String[] args) {
+
+        if (args.length == 0 || (args.length == 1 && args[0].equalsIgnoreCase("help"))) {
+            sendHelp(sender, label);
+            return true;
+        }
 
         // /celestialdash chronicle
         if (args.length == 1 && args[0].equalsIgnoreCase("chronicle")) {
@@ -136,12 +143,31 @@ public class CelestialCommand implements CommandExecutor {
             return true;
         }
 
-        sender.sendMessage(messages.getUsageHeaderMessage());
-        sender.sendMessage(messages.formatUsageChronicle(label));
-        sender.sendMessage(messages.formatUsageReload(label));
-        sender.sendMessage(messages.formatUsageGive(label));
-        sender.sendMessage(messages.formatUsageChronicleGive(label));
-        sender.sendMessage(messages.formatUsagePackSend(label));
+        sendHelp(sender, label);
         return true;
+    }
+
+    private void sendHelp(CommandSender sender, String label) {
+        sender.sendMessage(messages.getUsageHeaderMessage());
+        sender.sendMessage(messages.formatUsageHelp(label));
+        if (sender instanceof Player && sender.hasPermission("celestialdash.chronicle")) {
+            sender.sendMessage(messages.describeUsage("chronicle", messages.formatUsageChronicle(label)));
+        }
+        if (!sender.hasPermission("celestialdash.admin")) {
+            return;
+        }
+
+        // Concrete examples also work with pre-existing customized usage messages.
+        String target = sender instanceof Player player ? player.getName()
+                : Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                .min(String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder()))
+                .orElse("<player>");
+        sender.sendMessage(messages.describeUsage("give", messages.formatUsageGive(label)));
+        sender.sendMessage(messages.formatUsageExample(label, "give " + target + " 1"));
+        sender.sendMessage(messages.describeUsage("chronicle-give", messages.formatUsageChronicleGive(label)));
+        sender.sendMessage(messages.formatUsageExample(label, "chronicle give " + target));
+        sender.sendMessage(messages.describeUsage("pack-send", messages.formatUsagePackSend(label)));
+        sender.sendMessage(messages.formatUsageExample(label, "pack send " + target));
+        sender.sendMessage(messages.describeUsage("reload", messages.formatUsageReload(label)));
     }
 }
