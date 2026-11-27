@@ -54,9 +54,6 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 - [x] Reducir los mensajes repetidos del dash en el chat. Por defecto, con la barra activa, ambos impulsos omiten el mensaje de éxito. Desactivar la barra o activar `dash-success-chat-enabled` recupera los textos personalizados. En el cliente 1.20 se comprobó el primer impulso con el chat limpio y el aviso de cooldown al reintentar tarde. La suite de 138 pruebas incluye los dos impulsos, las combinaciones de configuración y la recarga.
 - [x] Mostrar las cargas restantes del amuleto. En Minecraft 1.20 y 26.3, tres purificaciones con el primer amuleto mostraron `2/3`, `1/3` y el aviso de agotamiento `0/3` sobre la barra rápida. En ambos clientes desapareció el primer amuleto y la descripción del segundo siguió mostrando `3/3`. La prueba usó dos amuletos de prueba en un mundo separado por versión, con el cooldown a cero y veneno reaplicado entre usos. La suite de 151 pruebas incluye la recuperación del máximo de amuletos antiguos y su conservación tras una recarga. [Configuración del amuleto](README.md#celestial-amulet).
 - [x] Mejorar la ayuda de comandos para jugadores y administradores. En Paper 1.20 y 26.3, un jugador pudo recuperar su Crónica y los cuatro comandos administrativos le denegaron el acceso. Con permiso de administrador se ejecutaron los ejemplos de entrega de lágrimas y crónicas, reenvío del pack y recarga con `/celestialdash` y `/cdash`. Ambos clientes mostraron la solicitud opcional del pack y registraron su rechazo. La suite de 163 pruebas incluye 12 nuevas sobre ayuda, permisos, ejemplos y autocompletado. [Guía de comandos](README.md#commands).
-- [ ] Validar la experiencia con jugadores que no conozcan el plugin.
-
-**Criterio de salida:** un jugador nuevo entiende cómo conseguir lágrimas, usar el combo y fabricar el amuleto.
 
 ## 1.2.0 — Distribución y compatibilidad
 
