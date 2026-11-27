@@ -1,7 +1,5 @@
 package com.minico.celestialdash;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -148,12 +146,15 @@ public class AmuletHandler implements Listener {
 
         // Only consume the Amulet and block the vanilla interaction after it purified something.
         event.setCancelled(true);
+        int maxUses = CelestialAmulet.getMaxUses(item);
         int remainingUses = CelestialAmulet.consumeUse(item);
         if (remainingUses == 0) {
             player.getInventory().setItemInMainHand(null);
+            sendActionBar(player, messages.formatAmuletDepletedActionBar(maxUses));
             player.sendMessage(messages.getAmuletDepletedMessage());
         } else {
-            player.sendMessage(messages.formatAmuletUsed(remainingUses));
+            sendActionBar(player, messages.formatAmuletUsedActionBar(remainingUses, maxUses));
+            player.sendMessage(messages.formatAmuletUsed(remainingUses, maxUses));
         }
 
         lastUse.put(player.getUniqueId(), now);
@@ -203,8 +204,7 @@ public class AmuletHandler implements Listener {
         return purified;
     }
 
-    @SuppressWarnings("deprecation") // Required for action-bar support on older target servers.
     private void sendActionBar(Player player, String message) {
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+        plugin.getDashActionBarHandler().showFeedback(player, message);
     }
 }

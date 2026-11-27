@@ -35,6 +35,9 @@ public final class PluginSettings {
     private static final int MAX_TEAR_CACHE_ENTRIES = 10_000;
     private static final String DEFAULT_RESOURCE_PACK_URL = "https://your-domain/CelestialDash-Resource-Pack.zip";
     private static final String DEFAULT_RESOURCE_PACK_PROMPT = "&bThis server uses the CelestialDash resource pack.";
+    private static final String DEFAULT_ACTION_BAR_READY = "&bCelestial Dash &7» &aReady";
+    private static final String DEFAULT_ACTION_BAR_COOLDOWN = "&bCelestial Dash &7» &e%seconds%s";
+    private static final String DEFAULT_ACTION_BAR_SECOND_DASH = "&bSecond dash &7» &f%seconds%s";
     private static final String AMULET_PURIFIABLE_EFFECTS_PATH = "celestial-amulet.purifiable-effects";
     private static final Set<PotionEffectType> DEFAULT_PURIFIABLE_EFFECTS = Set.of(
             PotionEffectType.POISON,
@@ -57,6 +60,7 @@ public final class PluginSettings {
     private final ResourcePackSettings resourcePack;
     private final ChronicleSettings chronicle;
     private final PlaceholderSettings placeholders;
+    private final ActionBarSettings actionBar;
 
     private PluginSettings(DropSettings drops,
                            DashSettings dash,
@@ -65,7 +69,8 @@ public final class PluginSettings {
                            AmuletSettings amulet,
                            ResourcePackSettings resourcePack,
                            ChronicleSettings chronicle,
-                           PlaceholderSettings placeholders) {
+                           PlaceholderSettings placeholders,
+                           ActionBarSettings actionBar) {
         this.drops = drops;
         this.dash = dash;
         this.tearCustomModelData = tearCustomModelData;
@@ -74,6 +79,7 @@ public final class PluginSettings {
         this.resourcePack = resourcePack;
         this.chronicle = chronicle;
         this.placeholders = placeholders;
+        this.actionBar = actionBar;
     }
 
     public static PluginSettings defaults() {
@@ -89,6 +95,7 @@ public final class PluginSettings {
                         new SoundSettings(true, Sound.ENTITY_PHANTOM_FLAP, 1.2f, 0.6f),
                         new TrailSettings(true, Particle.CLOUD, 20, 0.3, 0.4, 0.3, 0.01, 10, 1),
                         new DoubleDashSettings(true, 4_000L, 40, 1.2, 1.1),
+                        false,
                         Set.of()
                 ),
                 0,
@@ -102,7 +109,9 @@ public final class PluginSettings {
                         DEFAULT_RESOURCE_PACK_PROMPT
                 ),
                 new ChronicleSettings(true, true, true, 300_000L),
-                new PlaceholderSettings(DEFAULT_TEAR_CACHE_MAX_ENTRIES)
+                new PlaceholderSettings(DEFAULT_TEAR_CACHE_MAX_ENTRIES),
+                new ActionBarSettings(true, true, 5, DEFAULT_ACTION_BAR_READY,
+                        DEFAULT_ACTION_BAR_COOLDOWN, DEFAULT_ACTION_BAR_SECOND_DASH)
         );
     }
 
@@ -110,6 +119,8 @@ public final class PluginSettings {
      * Loads a new immutable settings snapshot.
      * Missing gameplay scalar values retain their previous loaded value to preserve reload behavior.
      * Resource pack delivery is always read fresh, so removing that section disables it safely.
+     * Action bar templates are also read fresh: missing templates restore their defaults,
+     * while explicit empty strings remain empty. Their color codes are left untranslated.
      */
     public static PluginSettings load(FileConfiguration config, Logger logger, PluginSettings previous) {
         PluginSettings fallback = previous == null ? defaults() : previous;
@@ -187,6 +198,7 @@ public final class PluginSettings {
                         getBoundedDouble(config, logger, "double-dash.lift-multiplier",
                                 previousDoubleDash.liftMultiplier(), 10.0)
                 ),
+                config.getBoolean("dash-success-chat-enabled", previousDash.successChatEnabled()),
                 loadBlacklistedWorlds(config, "dash-blacklist-worlds")
         );
 
@@ -222,9 +234,18 @@ public final class PluginSettings {
                 getBoundedInt(config, logger, "placeholder-tear-cache-max-entries",
                         fallback.placeholders.tearCacheMaxEntries(), 1, MAX_TEAR_CACHE_ENTRIES)
         );
+        ActionBarSettings actionBar = new ActionBarSettings(
+                config.getBoolean("dash-action-bar.enabled", fallback.actionBar.enabled()),
+                config.getBoolean("dash-action-bar.only-while-holding-tear", fallback.actionBar.onlyWhileHoldingTear()),
+                getBoundedInt(config, logger, "dash-action-bar.update-interval-ticks",
+                        fallback.actionBar.updateIntervalTicks(), 1, 20),
+                getString(config, "dash-action-bar.ready", DEFAULT_ACTION_BAR_READY),
+                getString(config, "dash-action-bar.cooldown", DEFAULT_ACTION_BAR_COOLDOWN),
+                getString(config, "dash-action-bar.second-dash", DEFAULT_ACTION_BAR_SECOND_DASH)
+        );
 
         return new PluginSettings(drops, dash, tearCustomModelData, giveMaxAmount, amulet, resourcePack, chronicle,
-                placeholders);
+                placeholders, actionBar);
     }
 
     public DropSettings drops() {
@@ -257,6 +278,10 @@ public final class PluginSettings {
 
     public PlaceholderSettings placeholders() {
         return placeholders;
+    }
+
+    public ActionBarSettings actionBar() {
+        return actionBar;
     }
 
     private static String getString(FileConfiguration config, String path, String fallback) {
@@ -461,7 +486,23 @@ public final class PluginSettings {
                                SoundSettings sound,
                                TrailSettings trail,
                                DoubleDashSettings doubleDash,
+                               boolean successChatEnabled,
                                Set<String> blacklistedWorlds) {
+
+        /** Retains the constructor signature used by extensions before success chat became configurable. */
+        public DashSettings(long cooldownMs,
+                            double strength,
+                            double lift,
+                            int regenerationDurationTicks,
+                            int regenerationAmplifier,
+                            ParticleSettings impactParticle,
+                            SoundSettings sound,
+                            TrailSettings trail,
+                            DoubleDashSettings doubleDash,
+                            Set<String> blacklistedWorlds) {
+            this(cooldownMs, strength, lift, regenerationDurationTicks, regenerationAmplifier,
+                    impactParticle, sound, trail, doubleDash, false, blacklistedWorlds);
+        }
 
         public DashSettings {
             blacklistedWorlds = Set.copyOf(blacklistedWorlds);
@@ -534,5 +575,13 @@ public final class PluginSettings {
     }
 
     public record PlaceholderSettings(int tearCacheMaxEntries) {
+    }
+
+    public record ActionBarSettings(boolean enabled,
+                                    boolean onlyWhileHoldingTear,
+                                    int updateIntervalTicks,
+                                    String readyMessage,
+                                    String cooldownMessage,
+                                    String secondDashMessage) {
     }
 }

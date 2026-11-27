@@ -3,7 +3,7 @@
 Storm-powered movement and progression for Minecraft servers. During thunderstorms, players can obtain Celestial Tears,
 use them to perform fast aerial dashes, and craft a Celestial Amulet for emergency purification.
 
-**Version:** 1.1.7
+**Version:** 1.1.8
 
 **License:** MIT
 
@@ -11,7 +11,9 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 ## Roadmap
 
-See [the development roadmap](ROADMAP.md) for planned releases, task checklists, and completion criteria. The next milestone is 1.1.8: reliability of dashes, drops, and amulets.
+See [the development roadmap](ROADMAP.md) for planned releases and [the 1.1.8 release notes](releases/1.1.8.md) for the changes in this build.
+
+The [1.1.8 validation report](docs/validation-1.1.8.md) records the real-server crafting, WorldGuard and mechanics checks on Paper 1.20 and 26.3.
 
 ## Features
 
@@ -19,7 +21,7 @@ See [the development roadmap](ROADMAP.md) for planned releases, task checklists,
   delivery.
 - A localized, one-time in-game Chronicle for every player after upgrading to 1.1.7, with player recovery and admin
   reissue commands for replacement copies.
-- Wind Dash: consume the Celestial Tear in your main hand to launch in the direction you are facing, with an optional
+- Wind Dash: consume the Celestial Tear in your main hand for a horizontal impulse based on your look direction and fixed vertical lift, with an optional
   world blacklist.
 - Double Dash combo with configurable timing, second-dash multipliers, and temporary fall-damage immunity.
 - Configurable regeneration, sounds, impact particles, and particle trails.
@@ -34,8 +36,15 @@ See [the development roadmap](ROADMAP.md) for planned releases, task checklists,
 ### Celestial Tears
 
 Once per second during a thunderstorm, each eligible online player is checked independently against the configured drop
-chance and that player's own cooldown. Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
+chance and that player's own cooldown. Ordinary rain without thunder does not generate Celestial Tears.
+Hold a valid Celestial Tear in your main hand and right-click to dash. One Tear
 is consumed for every dash.
+
+The dash always sets vertical velocity to `dash-vertical-lift`, regardless of whether you look up or down.
+The horizontal impulse follows your look direction: looking level gives the full `dash-strength`, tilting up or down
+reduces horizontal speed, and looking straight up or down gives effectively no horizontal movement. Looking down
+does not produce a downward dash. The second dash uses your current look direction and applies the configured
+strength and lift multipliers to those same rules. This preserves the existing movement behavior.
 
 `drop-delivery: "GROUND"` drops the generated Tear near that eligible player. With `drop-delivery: "INVENTORY"`, the
 same player's generated Tear is added directly to their inventory instead; it is not chosen from the ground or from
@@ -45,6 +54,15 @@ affects storm-generated Tears only, not `/celestialdash give`.
 If Double Dash is enabled, right-click again within the configured combo window to perform a second dash. The second
 dash grants the configured fall-damage immunity and uses the configured strength and lift multipliers. Administrators
 can blacklist worlds from dashing; `celestialdash.bypass-dash-blacklist` bypasses that restriction.
+
+The second dash is allowed through the end of the combo window, even while the normal cooldown is active.
+After it, further clicks are blocked until the cooldown measured from the second dash expires; blocked clicks
+do not consume Tears. Its fall protection covers only the next fall-damage event within the configured duration,
+not other damage types. The first dash does not grant this protection.
+
+Disconnecting, dying, changing worlds, or successfully teleporting to a different position cancels the combo,
+fall protection, and active particle trail, while retaining the normal dash cooldown. Cancelled teleports and
+rotation-only teleports preserve the combo and protection. Cooldowns remain in memory and reset on plugin/server restart.
 
 ### The Falling Sky
 
@@ -94,6 +112,11 @@ Fire is always extinguished. The amulet only consumes a charge when it successfu
 uses, cooldown, and potion-effect list are configurable. Every crafted amulet has a unique internal identity, so
 separate amulets do not stack.
 
+Hover over an amulet to see its remaining uses and its original capacity. After each successful
+purification, the action bar above the hotbar shows the updated count (for example, `2/3`).
+Spending the last charge removes that amulet and displays a depleted notice with `0/3`.
+Other amulets keep their own charges.
+
 ## Configuration
 
 All settings are in `plugins/CelestialDash/config.yml`. After editing the file, run `/celestialdash reload`.
@@ -112,12 +135,20 @@ give-max-amount: 2304
 
 # Dash
 dash-cooldown-seconds: 10
+dash-success-chat-enabled: false
 dash-blacklist-worlds: [ ]
 dash-strength: 1.8
 dash-vertical-lift: 0.4
 double-dash:
   strength-multiplier: 1.2
   lift-multiplier: 1.1
+dash-action-bar:
+  enabled: true
+  only-while-holding-tear: true
+  update-interval-ticks: 5
+  ready: "&bCelestial Dash &7» &aReady"
+  cooldown: "&bCelestial Dash &7» &e%seconds%s"
+  second-dash: "&bSecond dash &7» &f%seconds%s"
 
 # Automatic first-join Chronicle
 chronicle:
@@ -140,7 +171,23 @@ celestial-amulet:
     - WITHER
 ```
 
-`uses` applies to newly crafted amulets. Existing amulets keep their current remaining charges. Set `enabled` to `false`
+Hold a Celestial Tear in your main hand to see when the dash is ready. After the first dash, the bar shows
+the second-dash window in tenths of a second. Once that window closes or you use the second dash, it shows
+the remaining cooldown in whole seconds. Both countdowns round up. Dash and amulet warnings take priority for two seconds.
+
+Set `dash-action-bar.only-while-holding-tear` to `false` to show the bar while a tear is anywhere in your inventory.
+Set `dash-action-bar.enabled` to `false` to turn the status bar off. The refresh interval accepts 1–20 ticks.
+Each message accepts `&` color codes and an empty string hides that state. Older configs use the defaults above.
+
+By default, the action bar handles dash feedback and successful dashes stay out of chat.
+Set `dash-success-chat-enabled: true` to also announce both impulses in chat. Turning the action bar off
+automatically restores these announcements. Customize their text with `messages.dash-used` and `messages.second-dash`.
+
+`uses` sets the capacity for newly crafted amulets. Older amulets recover their capacity from the
+original count in their lore. If that count is missing or invalid, the plugin uses the larger of the
+current setting and the charges still on the item. Customize the two action-bar notices with
+`messages.amulet-used-action-bar` and `messages.amulet-depleted-action-bar`. Both accept
+`%uses%` and `%max-uses%`. Set `enabled` to `false`
 to stop amulet use, or `recipe-enabled` to `false` to remove its crafting recipe. Set `chronicle.enabled` to `false` to
 stop automatic first-join Chronicle delivery; it does not disable player recovery or the explicit admin reissue command.
 `chronicle.notification-enabled` and `chronicle.delivery-sound-enabled` control the delivery announcement, while
@@ -161,21 +208,22 @@ The `messages` section supports Minecraft `&` color codes and can be used to cus
 Existing configurations are never auto-overwritten: on startup and reload, the plugin warns if the v1.1.6 resource-pack
 or CustomModelData keys are missing.
 
+## Building a release
+
+Set the project version in `pom.xml`, build the ZIP from its source with `python3 scripts/package_resource_pack.py target/pack.zip`, and copy the printed SHA-1 to `src/main/resources/config.yml` when the pack changes. Add the player-facing release notes in `releases/<version>.md`. Adding that new file to `main` requests publication for the matching project version. Alternatively, push a `v<version>` tag for the release commit. Use the manual **Release / dry run** action to test the selected ref and download its artifacts before publication.
+
+GitHub Actions runs the Maven tests, checks the version embedded in the JAR and the pack URL and checksum, stages both files in a draft, and verifies the uploaded files before publishing.
+
 ## Optional Resource Pack
 
 The editable pack source is in [`resource-pack/CelestialDash-Resource-Pack`](resource-pack/CelestialDash-Resource-Pack).
-The release-ready archive is [`resource-pack/CelestialDash-Resource-Pack.zip`](resource-pack/CelestialDash-Resource-Pack.zip);
-do not extract it. It
-gives the Celestial Tear and Celestial Amulet their own 32x32 pixel-art textures without changing vanilla Ghast Tears or
-Nautilus Shells.
+Download the ZIP attached to your [plugin release](https://github.com/Miniico/CelestialDash/releases). It gives the Celestial Tear and Celestial Amulet their own 32×32 textures and preserves the vanilla Ghast Tear and Nautilus Shell.
 
-The plugin supports Minecraft 1.20 and newer, while the bundled resource pack is currently verified for clients from
-1.20 through 1.21.3 and for 1.21.4+ through resource-pack format 88. Check the pack's own README before assuming
-compatibility with a future Minecraft format.
+The pack declares resource formats 15 through 97.1, with legacy models and an overlay for modern clients. See the [pack notes](resource-pack/CelestialDash-Resource-Pack/README.md) for the client checks and their scope.
 
-### Use the Bundled Pack with Google Drive
+### Enable the release pack
 
-The default `config.yml` already contains the bundled pack's direct Google Drive URL, SHA-1, and model data values.
+The default `config.yml` contains the direct download URL for this release, its SHA-1 and the model data values.
 Resource-pack delivery remains disabled by default.
 
 To use the bundled pack on a new installation, open `plugins/CelestialDash/config.yml` and change only this option:
@@ -198,8 +246,8 @@ tear-custom-model-data: 22001
 
 resource-pack:
   enabled: true
-  url: "https://drive.google.com/uc?export=download&id=1FXO5hS3Rg7FAUsn6Oq6ZdENKq0hBYS9C"
-  sha1: "21ddb9da21e3f74b41514d662700a25c2b10a750"
+  url: "https://github.com/Miniico/CelestialDash/releases/download/v1.1.8/CelestialDash-Resource-Pack-1.1.8.zip"
+  sha1: "71614664213a919ec735258bea6c9940f5ffe245"
   required: false
   prompt: "&bThis server uses the CelestialDash resource pack."
 
@@ -212,7 +260,7 @@ celestial-amulet:
 request or its download fails; the plugin does not add a separate manual kick.
 
 Before enabling the pack, open the direct URL in a private browser window. It must download the ZIP without requiring a
-Google sign-in or showing a Drive page. The configured SHA-1 belongs to the bundled ZIP and lets Minecraft reuse its
+sign-in. The configured SHA-1 belongs to the release ZIP and lets Minecraft reuse its
 cached copy instead of downloading it again when the file has not changed.
 
 Minecraft applies server-sent packs automatically; players do not need to place them in their normal `resourcepacks`
@@ -227,6 +275,11 @@ URL or pack revision.
 
 ## Commands
 
+Run `/celestialdash` or `/celestialdash help` to see the commands available to you.
+Players with the Chronicle permission see how to recover their book. Administrators also see
+examples for giving Tears, replacing a player's book and sending the resource pack. From the
+console, use an online player's name for `give`, `chronicle give` and `pack send`.
+
 | Command                                  | Permission                | Description                                                                                                                                                            |
 |------------------------------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/celestialdash chronicle`               | `celestialdash.chronicle` | Recovers a localized copy of *The Falling Sky* for yourself without resetting its one-time delivery marker. Subject to the configured recovery cooldown.               |
@@ -237,7 +290,7 @@ URL or pack revision.
 
 Aliases: `/cdash` and `/celestial`.
 
-Admin command tab completion is available for subcommands, online players, and common amounts.
+Tab completion follows the sender's permissions and the server's configured maximum give amount.
 
 ## Permissions
 

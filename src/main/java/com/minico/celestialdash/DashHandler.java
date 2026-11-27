@@ -1,7 +1,5 @@
 package com.minico.celestialdash;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -11,6 +9,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -24,11 +25,13 @@ import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.LongSupplier;
 
 public class DashHandler implements Listener {
 
     private final CelestialDash plugin;
     private final Messages messages;
+    private final LongSupplier currentTimeMillis;
 
     // Last dash time per player (for normal cooldown)
     private final Map<UUID, Long> lastDash = new HashMap<>();
@@ -41,6 +44,11 @@ public class DashHandler implements Listener {
     private final BukkitTask stateCleanupTask;
 
     public DashHandler(CelestialDash plugin, Messages messages) {
+        this(plugin, messages, System::currentTimeMillis);
+    }
+
+    DashHandler(CelestialDash plugin, Messages messages, LongSupplier currentTimeMillis) {
+        this.currentTimeMillis = currentTimeMillis;
         this.plugin = plugin;
         this.messages = messages;
         this.stateCleanupTask = new BukkitRunnable() {
@@ -81,24 +89,18 @@ public class DashHandler implements Listener {
         }
 
         if (!player.hasPermission("celestialdash.use")) {
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getNoUsePermissionMessage())
-            );
+            showFeedback(player, messages.getNoUsePermissionMessage());
             return;
         }
 
         PluginSettings.DashSettings dashSettings = plugin.getSettings().dash();
         if (dashSettings.isWorldBlacklisted(player.getWorld().getName())
                 && !player.hasPermission("celestialdash.bypass-dash-blacklist")) {
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getDashWorldDisabledMessage())
-            );
+            showFeedback(player, messages.getDashWorldDisabledMessage());
             return;
         }
 
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
 
         boolean doubleDashEnabled = dashSettings.doubleDash().enabled();
         boolean isSecondDash = false;
@@ -126,10 +128,7 @@ public class DashHandler implements Listener {
                 long remaining = (cd - diff) / 1000L;
                 if (remaining < 1) remaining = 1;
 
-                player.spigot().sendMessage(
-                        ChatMessageType.ACTION_BAR,
-                        TextComponent.fromLegacyText(messages.formatCooldown(remaining))
-                );
+                showFeedback(player, messages.formatCooldown(remaining));
                 return;
             }
         }
@@ -139,20 +138,14 @@ public class DashHandler implements Listener {
         int slot = player.getInventory().getHeldItemSlot();
         if (slot == -1) {
             // The held slot is unavailable; do not consume an unrelated stack.
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getNoTearsMessage())
-            );
+            showFeedback(player, messages.getNoTearsMessage());
             return;
         }
 
         // Consume the tear before applying its movement effect. A slot changed by
         // another listener must not grant a dash without paying its cost.
         if (!TearUtils.tryConsumeTear(player, slot)) {
-            player.spigot().sendMessage(
-                    ChatMessageType.ACTION_BAR,
-                    TextComponent.fromLegacyText(messages.getNoTearsMessage())
-            );
+            showFeedback(player, messages.getNoTearsMessage());
             return;
         }
 
@@ -178,12 +171,16 @@ public class DashHandler implements Listener {
         lastDash.put(uuid, now);
     }
 
+    private void showFeedback(Player player, String message) {
+        plugin.getDashActionBarHandler().showFeedback(player, message);
+    }
+
     private void applyFallImmunity(UUID uuid) {
         int ticks = plugin.getSettings().dash().doubleDash().fallImmunityTicks();
         if (ticks <= 0) return;
 
         long durationMs = ticks * 50L;
-        fallImmunityUntil.put(uuid, System.currentTimeMillis() + durationMs);
+        fallImmunityUntil.put(uuid, currentTimeMillis.getAsLong() + durationMs);
     }
 
     @EventHandler
@@ -196,7 +193,7 @@ public class DashHandler implements Listener {
         Long until = fallImmunityUntil.get(uuid);
         if (until == null) return;
 
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
         if (now <= until) {
             event.setCancelled(true);
         }
@@ -208,10 +205,34 @@ public class DashHandler implements Listener {
     @SuppressWarnings("unused")
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        // Keep the normal dash cooldown across reconnects.
+        clearTransientState(uuid);
+    }
+
+    private void clearTransientState(UUID uuid) {
+        // Keep the normal dash cooldown across changes of player context.
         comboWindowEnd.remove(uuid);
         fallImmunityUntil.remove(uuid);
         cancelTrail(uuid);
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        clearTransientState(event.getEntity().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        Location to = event.getTo();
+        Location from = event.getFrom();
+        if (to != null && (!from.getWorld().equals(to.getWorld())
+                || from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ())) {
+            clearTransientState(event.getPlayer().getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        clearTransientState(event.getPlayer().getUniqueId());
     }
 
     public void stop() {
@@ -228,7 +249,7 @@ public class DashHandler implements Listener {
             return;
         }
 
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
         if (!lastDash.isEmpty()) {
             long cooldown = plugin.getSettings().dash().cooldownMs();
             lastDash.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
@@ -242,7 +263,8 @@ public class DashHandler implements Listener {
     }
 
     private void performDash(Player player, boolean secondDash) {
-        // Direction and base strength
+        // Preserve the horizontal components of the look direction, including
+        // their pitch-dependent magnitude. Vertical velocity uses a fixed lift.
         Location dashLocation = player.getLocation();
         World world = player.getWorld();
         Vector dir = dashLocation.getDirection().normalize();
@@ -300,11 +322,9 @@ public class DashHandler implements Listener {
 
         startTrail(player);
 
-        // Different messages for first and second dash
-        if (secondDash) {
-            player.sendMessage(messages.getSecondDashMessage());
-        } else {
-            player.sendMessage(messages.getDashUsedMessage());
+        // The HUD provides normal success feedback. Keep chat when requested or when the HUD is off.
+        if (dashSettings.successChatEnabled() || !plugin.getSettings().actionBar().enabled()) {
+            player.sendMessage(secondDash ? messages.getSecondDashMessage() : messages.getDashUsedMessage());
         }
     }
 
@@ -365,7 +385,7 @@ public class DashHandler implements Listener {
     public long getRemainingCooldownSeconds(Player player) {
         UUID uuid = player.getUniqueId();
         long last = lastDash.getOrDefault(uuid, 0L);
-        return calculateRemainingCooldownSeconds(last, System.currentTimeMillis(), plugin.getSettings().dash().cooldownMs());
+        return calculateRemainingCooldownSeconds(last, currentTimeMillis.getAsLong(), plugin.getSettings().dash().cooldownMs());
     }
 
     static long calculateRemainingCooldownSeconds(long lastDashMs, long nowMs, long cooldownMs) {
@@ -376,13 +396,18 @@ public class DashHandler implements Listener {
         return (long) Math.ceil((cooldownMs - elapsed) / 1000.0);
     }
 
+    long getRemainingDoubleDashWindowMillis(Player player) {
+        Long end = comboWindowEnd.get(player.getUniqueId());
+        return end == null ? 0L : Math.max(0L, end - currentTimeMillis.getAsLong());
+    }
+
     public boolean isInDoubleDashWindow(Player player) {
         UUID uuid = player.getUniqueId();
         Long windowEnd = comboWindowEnd.get(uuid);
         if (windowEnd == null) {
             return false;
         }
-        if (System.currentTimeMillis() <= windowEnd) {
+        if (currentTimeMillis.getAsLong() <= windowEnd) {
             return true;
         }
         comboWindowEnd.remove(uuid);

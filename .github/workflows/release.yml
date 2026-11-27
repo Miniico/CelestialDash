@@ -1,0 +1,263 @@
+name: Release / dry run
+
+# Publish by pushing v<version> or adding releases/<version>.md on main.
+# Every manual run is a dry run, even when a publication marker is present.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths: ['releases/*.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: celestialdash-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build, test and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      commit: ${{ steps.version.outputs.commit }}
+      publish: ${{ steps.version.outputs.publish }}
+      mode: ${{ steps.version.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Validate version and explicit publication marker
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          import xml.etree.ElementTree as ET
+
+          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+          version = ET.parse('pom.xml').findtext('m:version', namespaces=ns)
+          number = r'(?:0|[1-9][0-9]*)'
+          prerelease = r'(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)'
+          semver = rf'{number}\.{number}\.{number}(?:-{prerelease}(?:\.{prerelease})*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?'
+          if not version or not re.fullmatch(semver, version) or 'SNAPSHOT' in version.upper():
+              raise SystemExit('pom.xml must contain a concrete, non-SNAPSHOT SemVer version')
+          publish, mode = False, 'dry-run'
+          if os.environ['EVENT_NAME'] == 'push':
+              if os.environ['REF_TYPE'] == 'tag':
+                  if os.environ['REF_NAME'] != f'v{version}':
+                      raise SystemExit(f'The publication tag must be v{version}, matching pom.xml')
+                  publish, mode = True, 'tag'
+              elif os.environ['REF_NAME'] == 'main':
+                  before = os.environ['BEFORE_SHA']
+                  if before and before != '0' * 40:
+                      added = subprocess.check_output([
+                          'git', 'diff', '--name-only', '--diff-filter=A', '--find-renames',
+                          before, os.environ['AFTER_SHA'], '--', f'releases/{version}.md',
+                      ], text=True).splitlines()
+                      publish = f'releases/{version}.md' in added
+                  mode = 'main'
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write(f'version={version}\ncommit={commit}\npublish={str(publish).lower()}\nmode={mode}\n')
+          PY
+      - name: Build and run all tests
+        # The tracked wrapper has mode 100644; invoke its shell explicitly on Linux.
+        run: sh ./mvnw --batch-mode --no-transfer-progress clean verify
+      - name: Package and validate release files
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir -p dist
+          cp "target/CelestialDash-${VERSION}.jar" "dist/CelestialDash-${VERSION}.jar"
+          python3 scripts/package_resource_pack.py "dist/CelestialDash-Resource-Pack-${VERSION}.zip"
+          python3 - <<'PY'
+          import hashlib
+          import os
+          import re
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          version = os.environ['VERSION']
+          jar_path = Path(f'dist/CelestialDash-{version}.jar')
+          pack_path = Path(f'dist/CelestialDash-Resource-Pack-{version}.zip')
+          with ZipFile(jar_path) as jar:
+              if jar.testzip() is not None:
+                  raise SystemExit('The plugin JAR is corrupt')
+              plugin = jar.read('plugin.yml').decode('utf-8')
+              match = re.search(r'^version:\s*([^\r\n]+)', plugin, re.MULTILINE)
+              if not match or match.group(1).strip().strip('\"\x27') != version:
+                  raise SystemExit('The built plugin.yml version does not match pom.xml')
+              properties = jar.read('META-INF/maven/com.minico/CelestialDash/pom.properties').decode('utf-8')
+              if not re.search(rf'^version={re.escape(version)}\s*$', properties, re.MULTILINE):
+                  raise SystemExit('The built Maven artifact version does not match pom.xml')
+              config = jar.read('config.yml').decode('utf-8')
+              section = re.search(r'^resource-pack:\s*\n((?:[ \t]+[^\n]*\n|[ \t]*\n)*)', config, re.MULTILINE)
+              if not section:
+                  raise SystemExit('The built config.yml has no resource-pack section')
+              def setting(key):
+                  value = re.search(rf'^  {key}:\s*([^\r\n]+)', section.group(1), re.MULTILINE)
+                  return value.group(1).strip().strip('\"\x27') if value else None
+              expected_url = f'https://github.com/{os.environ["REPOSITORY"]}/releases/download/v{version}/{pack_path.name}'
+              if setting('url') != expected_url:
+                  raise SystemExit('The built resource-pack URL must identify this versioned GitHub release ZIP')
+              if setting('sha1') != hashlib.sha1(pack_path.read_bytes()).hexdigest():
+                  raise SystemExit('The built resource-pack SHA-1 does not match the produced ZIP')
+          with ZipFile(pack_path) as pack:
+              if pack.testzip() is not None or 'pack.mcmeta' not in pack.namelist():
+                  raise SystemExit('The resource pack must be a valid ZIP with pack.mcmeta at its root')
+          with Path('dist/SHA256SUMS').open('w', encoding='utf-8', newline='\n') as output:
+              for path in (jar_path, pack_path):
+                  output.write(f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n')
+          notes = Path(f'releases/{version}.md')
+          if notes.is_file():
+              Path('dist/RELEASE_NOTES.md').write_bytes(notes.read_bytes())
+          PY
+      - name: Save tested release files (also available in dry runs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: CelestialDash-${{ steps.version.outputs.version }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize dry run
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          printf '### Dry run completed\n\nBuilt, tested and packaged version `%s`. Download the workflow artifact to review both files. No GitHub release was created.\n' "$VERSION" >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Publish complete release
+    needs: build
+    if: github.event_name == 'push' && needs.build.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: celestialdash-publish-${{ needs.build.outputs.version }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: v${{ needs.build.outputs.version }}
+      VERSION: ${{ needs.build.outputs.version }}
+      BUILD_COMMIT: ${{ needs.build.outputs.commit }}
+      PUBLISH_MODE: ${{ needs.build.outputs.mode }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: CelestialDash-${{ needs.build.outputs.version }}
+          path: dist
+      - name: Verify files and refuse an existing release
+        run: |
+          set -euo pipefail
+          (cd dist && sha256sum --check SHA256SUMS)
+          # Include drafts, and fail closed if the API request fails. Existing
+          # releases are never changed, deleted, or given replacement assets.
+          gh api --paginate --slurp "repos/${GH_REPO}/releases?per_page=100" > existing-releases.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          pages = json.loads(Path('existing-releases.json').read_text())
+          if any(release['tag_name'] == os.environ['RELEASE_TAG'] for page in pages for release in page):
+              raise SystemExit('A release or draft already exists for this tag; inspect it manually')
+          PY
+      - name: Stage both assets privately, verify them, then publish
+        run: |
+          set -euo pipefail
+          # Resolve annotated and lightweight tags, both before staging and just
+          # before publication. Refuse a tag that no longer identifies this build.
+          verify_remote_tag() {
+            local tag_json tag_sha tag_type
+            tag_json=$(gh api "repos/${GH_REPO}/git/matching-refs/tags/${RELEASE_TAG}" \
+              | jq --arg ref "refs/tags/${RELEASE_TAG}" '.[] | select(.ref == $ref)')
+            if [ -z "$tag_json" ]; then
+              test "$1" = allow-missing
+              return
+            fi
+            tag_sha=$(printf '%s' "$tag_json" | jq -r '.object.sha')
+            tag_type=$(printf '%s' "$tag_json" | jq -r '.object.type')
+            while [ "$tag_type" = tag ]; do
+              tag_json=$(gh api "repos/${GH_REPO}/git/tags/${tag_sha}")
+              tag_sha=$(printf '%s' "$tag_json" | jq -r '.object.sha')
+              tag_type=$(printf '%s' "$tag_json" | jq -r '.object.type')
+            done
+            test "$tag_type" = commit
+            test "$tag_sha" = "$BUILD_COMMIT"
+          }
+          if [ "$PUBLISH_MODE" = main ]; then
+            verify_remote_tag allow-missing
+          else
+            verify_remote_tag require-existing
+          fi
+          # A failure after creation leaves only a draft for inspection. Never
+          # publish until BOTH uploaded files have been downloaded and verified.
+          release_args=()
+          if [ "$PUBLISH_MODE" = tag ]; then
+            release_args+=(--verify-tag)
+          fi
+          if [ -f dist/RELEASE_NOTES.md ]; then
+            release_args+=(--notes-file dist/RELEASE_NOTES.md)
+          else
+            release_args+=(--generate-notes)
+          fi
+          if [[ "${VERSION%%+*}" == *-* ]]; then
+            release_args+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" --repo "$GH_REPO" --draft --target "$BUILD_COMMIT" \
+            --title "CelestialDash ${VERSION}" "${release_args[@]}"
+          gh release upload "$RELEASE_TAG" --repo "$GH_REPO" \
+            "dist/CelestialDash-${VERSION}.jar" \
+            "dist/CelestialDash-Resource-Pack-${VERSION}.zip"
+          gh release download "$RELEASE_TAG" --repo "$GH_REPO" --dir uploaded \
+            --pattern "CelestialDash-${VERSION}.jar" \
+            --pattern "CelestialDash-Resource-Pack-${VERSION}.zip"
+          cp dist/SHA256SUMS uploaded/SHA256SUMS
+          (cd uploaded && sha256sum --check SHA256SUMS)
+          # Confirm there are exactly the two expected assets before publication.
+          gh release view "$RELEASE_TAG" --repo "$GH_REPO" \
+            --json isDraft,assets,tagName,targetCommitish > release.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          version = os.environ['VERSION']
+          release = json.loads(Path('release.json').read_text())
+          expected = {f'CelestialDash-{version}.jar', f'CelestialDash-Resource-Pack-{version}.zip'}
+          assets = release['assets']
+          if not release['isDraft'] or len(assets) != 2 or {asset['name'] for asset in assets} != expected:
+              raise SystemExit('Refusing to publish: draft status or complete asset set did not match')
+          if release['tagName'] != os.environ['RELEASE_TAG'] or release['targetCommitish'] != os.environ['BUILD_COMMIT']:
+              raise SystemExit('Refusing to publish: the draft tag or target commit does not match this build')
+          PY
+          # GitHub may create a new tag only when the draft is published. Keep
+          # its target pinned to the tested commit; never permit a moved tag.
+          if [ "$PUBLISH_MODE" = main ]; then
+            verify_remote_tag allow-missing
+          else
+            verify_remote_tag require-existing
+          fi
+          gh release edit "$RELEASE_TAG" --repo "$GH_REPO" --draft=false --target "$BUILD_COMMIT"
+          printf '### Release published\n\nVersion `%s`: both tested assets were uploaded and verified before publication.\n' "$VERSION" >> "$GITHUB_STEP_SUMMARY"

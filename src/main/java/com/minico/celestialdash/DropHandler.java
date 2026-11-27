@@ -46,8 +46,8 @@ public class DropHandler implements Listener {
                         continue;
                     }
 
-                    // Only drop during storms in allowed worlds
-                    if (!world.hasStorm()) {
+                    // Ordinary rain is not enough: Tears require an active thunderstorm.
+                    if (!world.hasStorm() || !world.isThundering()) {
                         continue;
                     }
 

@@ -3,6 +3,8 @@ package com.minico.celestialdash;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+
 public class Messages {
 
     private final CelestialDash plugin;
@@ -31,6 +33,9 @@ public class Messages {
     private String resourcePackInvalidConfigurationMessage;
     private String resourcePackSendFailedMessage;
     private String usageHeaderMessage;
+    private String usageHelpTemplate;
+    private String usageExampleTemplate;
+    private Map<String, String> usageDescriptions;
     private String usageChronicleTemplate;
     private String usageReloadTemplate;
     private String usageGiveTemplate;
@@ -41,6 +46,8 @@ public class Messages {
     private String amuletCooldownTemplate;
     private String amuletUsedTemplate;
     private String amuletDepletedMessage;
+    private String amuletUsedActionBarTemplate;
+    private String amuletDepletedActionBarTemplate;
 
     public Messages(CelestialDash plugin) {
         this.plugin = plugin;
@@ -167,6 +174,25 @@ public class Messages {
                 "&eUsage:"
         ));
 
+        // Runtime defaults keep help available on installations with older config files.
+        usageHelpTemplate = color(plugin.getConfig().getString(
+                "messages.usage-help",
+                "&7 /%label% help &8- &fShow commands you can use"
+        ));
+
+        usageExampleTemplate = color(plugin.getConfig().getString(
+                "messages.usage-example",
+                "&8   Example: &f/%label% %command%"
+        ));
+
+        usageDescriptions = Map.of(
+                "chronicle", usageDescription("chronicle", "Recover your Chronicle"),
+                "reload", usageDescription("reload", "Reload the plugin configuration"),
+                "give", usageDescription("give", "Give Celestial Tears to a player"),
+                "chronicle-give", usageDescription("chronicle-give", "Give a Chronicle copy to a player"),
+                "pack-send", usageDescription("pack-send", "Send the configured resource pack to a player")
+        );
+
         usageChronicleTemplate = color(plugin.getConfig().getString(
                 "messages.usage-chronicle",
                 "&7 /%label% chronicle"
@@ -209,12 +235,22 @@ public class Messages {
 
         amuletUsedTemplate = color(plugin.getConfig().getString(
                 "messages.amulet-used",
-                "&bCelestial energy purifies you. &7Uses left: &f%uses%"
+                "&bCelestial energy purifies you."
         ));
 
         amuletDepletedMessage = color(plugin.getConfig().getString(
                 "messages.amulet-depleted",
                 "&7The Celestial Amulet has lost its light."
+        ));
+
+        // Runtime fallbacks also give existing server configurations charge feedback.
+        amuletUsedActionBarTemplate = color(plugin.getConfig().getString(
+                "messages.amulet-used-action-bar",
+                "&bPurified! &7Celestial Amulet: &f%uses%/%max-uses% &7charges"
+        ));
+        amuletDepletedActionBarTemplate = color(plugin.getConfig().getString(
+                "messages.amulet-depleted-action-bar",
+                "&cCelestial Amulet depleted! &f%uses%/%max-uses% &7charges"
         ));
     }
 
@@ -312,6 +348,23 @@ public class Messages {
         return usageHeaderMessage;
     }
 
+    public String formatUsageHelp(String label) {
+        return usageHelpTemplate.replace("%label%", label);
+    }
+
+    public String formatUsageExample(String label, String command) {
+        return usageExampleTemplate.replace("%label%", label).replace("%command%", command);
+    }
+
+    public String describeUsage(String command, String usage) {
+        return usage + usageDescriptions.getOrDefault(command, "");
+    }
+
+    private String usageDescription(String command, String fallback) {
+        return color(plugin.getConfig().getString("messages.usage-" + command + "-description",
+                " &8- &f" + fallback));
+    }
+
     public String formatUsageChronicle(String label) {
         return usageChronicleTemplate.replace("%label%", label);
     }
@@ -346,6 +399,23 @@ public class Messages {
 
     public String formatAmuletUsed(int uses) {
         return amuletUsedTemplate.replace("%uses%", String.valueOf(uses));
+    }
+
+    public String formatAmuletUsed(int uses, int maxUses) {
+        return formatAmuletUsed(uses).replace("%max-uses%", String.valueOf(maxUses));
+    }
+
+    public String formatAmuletUsedActionBar(int uses, int maxUses) {
+        return formatAmuletCharges(amuletUsedActionBarTemplate, uses, maxUses);
+    }
+
+    public String formatAmuletDepletedActionBar(int maxUses) {
+        return formatAmuletCharges(amuletDepletedActionBarTemplate, 0, maxUses);
+    }
+
+    private String formatAmuletCharges(String template, int uses, int maxUses) {
+        return template.replace("%uses%", String.valueOf(uses))
+                .replace("%max-uses%", String.valueOf(maxUses));
     }
 
     public String getAmuletDepletedMessage() {
