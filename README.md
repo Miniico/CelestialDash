@@ -7,7 +7,22 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 **License:** MIT
 
-**Requirements:** Java 17 and a Spigot, Paper, or Purpur server running Minecraft 1.20 or newer.
+**Requirements:** CelestialDash targets Java 17 and uses Bukkit APIs shared by Spigot, Paper and Purpur for Minecraft 1.20 and newer. Use the Java version required by your server build.
+
+## Tested server compatibility
+
+These are the real server and client combinations used during development of 1.1.8. The tests used development builds leading up to the release. Spigot, Purpur and intermediate Minecraft versions have no equivalent recorded test run.
+
+| Minecraft Java client | Server | Server Java | Protection plugins tested together |
+| --- | --- | --- | --- |
+| 1.20 | Paper 1.20 build 17 | 17 | WorldGuard 7.0.9 and WorldEdit 7.2.15 |
+| 26.3 | Paper 26.3 build 194 | 25 | WorldGuard 7.0.21 and WorldEdit 7.4.6 |
+
+Both servers started with the plugins enabled. Players used both dash impulses, crafted amulets with normal and Shift-clicks, and spent charges on one amulet while a second kept its charges. See the [startup results](docs/validation-1.1.8.md), [dash tests](docs/mechanics-validation-2026-11-25.md), [crafting tests](docs/crafting-validation-2026-11-24.md) and [WorldGuard tests](docs/protection-validation-2026-11-24.md).
+
+On both versions, a player recovered the Chronicle and an administrator reissued it. Both clients displayed the optional pack prompt and reported declining it. Earlier client tests showed the custom item models, including a separate modern-only ZIP on 26.3. See the [command test results](ROADMAP.md#119--experiencia-de-juego) and [pack test notes](resource-pack/CelestialDash-Resource-Pack/README.md#supported-clients).
+
+PlaceholderAPI 2.12.3 registered the `celestialdash` expansion on both servers during the November 25 startup checks. Those runs had no connected players. Live placeholder values, first-join Chronicle delivery across a reconnect, and a fresh client download that displays both items from the exact [1.1.8 release ZIP](https://github.com/Miniico/CelestialDash/releases/tag/v1.1.8) still need checking on both setups.
 
 ## Roadmap
 
