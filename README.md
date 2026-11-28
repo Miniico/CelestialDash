@@ -13,7 +13,9 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 ## Tested server compatibility
 
-These are the server and client combinations tested for 1.1.8. The development builds covered gameplay and protection plugins. The public 1.1.8 JAR was then tested with PlaceholderAPI 2.12.3 and matching vanilla clients. Spigot, Purpur and intermediate Minecraft versions have no equivalent recorded test run.
+The [server compatibility matrix](docs/server-compatibility-1.1.8.md) lists the Spigot, Paper and Purpur builds checked with the public 1.1.8 JAR. It records gameplay, PlaceholderAPI and resource-pack download results for each build.
+
+The two Paper configurations below also have protection-plugin tests on development builds and visual resource-pack checks on matching vanilla clients.
 
 | Minecraft Java client | Server | Server Java | Protection plugins tested together |
 | --- | --- | --- | --- |
