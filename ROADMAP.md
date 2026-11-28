@@ -60,8 +60,8 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 **Objetivo:** facilitar la instalación, actualización y publicación.
 
 - [x] Automatizar la generación y publicación del JAR y del resource pack. El flujo de [publicación](.github/workflows/release.yml) compila y prueba el plugin, genera el ZIP desde sus fuentes y comprueba ambos archivos antes de hacer pública la versión.
-- [ ] Generar el SHA-1 a partir del ZIP publicado.
-- [ ] Establecer una única fuente oficial del resource pack y documentar su relación con CelestialDashPack.
+- [x] Generar el SHA-1 a partir del ZIP publicado. Maven empaqueta las fuentes e incorpora la huella de ese ZIP al JAR. Comprobado el 2026-11-28 con la descarga pública de la 1.1.8 y con una textura modificada en una compilación incremental.
+- [x] Establecer una única fuente oficial del resource pack y documentar su relación con CelestialDashPack. El [README](README.md#optional-resource-pack) identifica las fuentes editables, la descarga de cada versión y la distribución histórica.
 - [x] Publicar la [tabla de compatibilidad probada](README.md#tested-server-compatibility) con las versiones de Minecraft, Paper y Java, las comprobaciones realizadas y las pendientes en cada entorno.
 - [ ] Comprobar arranque, dash, crafteo, crónica, PlaceholderAPI y descarga del pack en las combinaciones anunciadas.
 - [x] Publicar la [guía de instalación y actualización desde 1.1.7](docs/install-and-upgrade.md).

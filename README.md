@@ -225,13 +225,15 @@ or CustomModelData keys are missing.
 
 ## Building a release
 
-Set the project version in `pom.xml`, build the ZIP from its source with `python3 scripts/package_resource_pack.py target/pack.zip`, and copy the printed SHA-1 to `src/main/resources/config.yml` when the pack changes. Add the player-facing release notes in `releases/<version>.md`. Adding that new file to `main` requests publication for the matching project version. Alternatively, push a `v<version>` tag for the release commit. Use the manual **Release / dry run** action to test the selected ref and download its artifacts before publication.
+Set the project version in `pom.xml` and run `sh mvnw clean verify` with Java 17 and Python 3.9 or newer. On Windows, run `.\mvnw.cmd clean verify`. Maven uses `python3` by default. If your interpreter is called `python`, add `"-Dpack.python=python"` to the command. Maven builds the versioned pack ZIP in `target/`, calculates its SHA-1 and embeds it in the default `config.yml` inside the JAR.
+
+Add the player-facing release notes in `releases/<version>.md`. Adding that new file to `main` requests publication for the matching project version. Alternatively, push a `v<version>` tag for the release commit. Use the manual **Release / dry run** action to test the selected ref and download its artifacts before publication.
 
 GitHub Actions runs the Maven tests, checks the version embedded in the JAR and the pack URL and checksum, stages both files in a draft, and verifies the uploaded files before publishing.
 
 ## Optional Resource Pack
 
-The editable pack source is in [`resource-pack/CelestialDash-Resource-Pack`](resource-pack/CelestialDash-Resource-Pack).
+The official editable pack source is [`resource-pack/CelestialDash-Resource-Pack`](resource-pack/CelestialDash-Resource-Pack). The separate [CelestialDashPack repository](https://github.com/Miniico/CelestialDashPack/releases/tag/v1.0.0) hosts the historical v1.0.0 distribution.
 Download the ZIP attached to your [plugin release](https://github.com/Miniico/CelestialDash/releases). It gives the Celestial Tear and Celestial Amulet their own 32×32 textures and preserves the vanilla Ghast Tear and Nautilus Shell.
 
 The pack declares resource formats 15 through 97.1, with legacy models and an overlay for modern clients. See the [pack notes](resource-pack/CelestialDash-Resource-Pack/README.md) for the archive layout and [tested server compatibility](#tested-server-compatibility) for the client results with the published ZIP.
@@ -254,7 +256,7 @@ Amulets use the configured appearance. Existing Tears remain valid when `tear-cu
 appearance is not changed retroactively. In particular, setting `tear-custom-model-data: 0` prevents the custom model
 from being added to new Tears; it does not remove the model stored on existing Tears.
 
-If you are upgrading from an older `config.yml`, add or update these bundled-pack values before enabling it:
+When upgrading an existing server to the official pack, copy `resource-pack.url` and `resource-pack.sha1` together from the `config.yml` inside the new JAR. For example, these are the values for **1.1.8**:
 
 ```yml
 tear-custom-model-data: 22001

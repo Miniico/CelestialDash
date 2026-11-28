@@ -87,7 +87,7 @@ jobs:
         run: |
           mkdir -p dist
           cp "target/CelestialDash-${VERSION}.jar" "dist/CelestialDash-${VERSION}.jar"
-          python3 scripts/package_resource_pack.py "dist/CelestialDash-Resource-Pack-${VERSION}.zip"
+          cp "target/CelestialDash-Resource-Pack-${VERSION}.zip" dist/
           python3 - <<'PY'
           import hashlib
           import os
