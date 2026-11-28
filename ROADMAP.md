@@ -62,7 +62,7 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 - [x] Automatizar la generación y publicación del JAR y del resource pack. El flujo de [publicación](.github/workflows/release.yml) compila y prueba el plugin, genera el ZIP desde sus fuentes y comprueba ambos archivos antes de hacer pública la versión.
 - [ ] Generar el SHA-1 a partir del ZIP publicado.
 - [ ] Establecer una única fuente oficial del resource pack y documentar su relación con CelestialDashPack.
-- [ ] Publicar una tabla de versiones de Minecraft, Java y servidores realmente probadas.
+- [x] Publicar la [tabla de compatibilidad probada](README.md#tested-server-compatibility) con las versiones de Minecraft, Paper y Java, las comprobaciones realizadas y las pendientes en cada entorno.
 - [ ] Comprobar arranque, dash, crafteo, crónica, PlaceholderAPI y descarga del pack en las combinaciones anunciadas.
 - [ ] Documentar la instalación y actualización desde 1.1.7.
 - [ ] Verificar una instalación limpia y una actualización siguiendo únicamente la documentación.
