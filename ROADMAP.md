@@ -64,8 +64,8 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 - [ ] Establecer una única fuente oficial del resource pack y documentar su relación con CelestialDashPack.
 - [x] Publicar la [tabla de compatibilidad probada](README.md#tested-server-compatibility) con las versiones de Minecraft, Paper y Java, las comprobaciones realizadas y las pendientes en cada entorno.
 - [ ] Comprobar arranque, dash, crafteo, crónica, PlaceholderAPI y descarga del pack en las combinaciones anunciadas.
-- [ ] Documentar la instalación y actualización desde 1.1.7.
-- [ ] Verificar una instalación limpia y una actualización siguiendo únicamente la documentación.
+- [x] Publicar la [guía de instalación y actualización desde 1.1.7](docs/install-and-upgrade.md).
+- [x] Verificar la instalación limpia en ambas versiones de Paper y la actualización entre los JAR publicados en 26.3. En Paper 1.20, el ensayo con datos antiguos necesitó corregir la declaración de API en una copia de la 1.1.7. [Resultados de instalación y migración](docs/install-validation-1.1.8.md).
 
 **Criterio de salida:** instalación limpia y actualización desde 1.1.7 verificadas, con compatibilidad documentada y artefactos de publicación coherentes.
 
