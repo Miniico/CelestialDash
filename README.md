@@ -9,9 +9,11 @@ use them to perform fast aerial dashes, and craft a Celestial Amulet for emergen
 
 **Requirements:** CelestialDash targets Java 17 and uses Bukkit APIs shared by Spigot, Paper and Purpur for Minecraft 1.20 and newer. Use the Java version required by your server build.
 
+[Install CelestialDash or upgrade from 1.1.7](docs/install-and-upgrade.md) · [Installation test results](docs/install-validation-1.1.8.md)
+
 ## Tested server compatibility
 
-These are the real server and client combinations used during development of 1.1.8. The tests used development builds leading up to the release. Spigot, Purpur and intermediate Minecraft versions have no equivalent recorded test run.
+These are the server and client combinations tested for 1.1.8. The development builds covered gameplay and protection plugins. The public 1.1.8 JAR was then tested with PlaceholderAPI 2.12.3 and matching vanilla clients. Spigot, Purpur and intermediate Minecraft versions have no equivalent recorded test run.
 
 | Minecraft Java client | Server | Server Java | Protection plugins tested together |
 | --- | --- | --- | --- |
@@ -20,9 +22,7 @@ These are the real server and client combinations used during development of 1.1
 
 Both servers started with the plugins enabled. Players used both dash impulses, crafted amulets with normal and Shift-clicks, and spent charges on one amulet while a second kept its charges. See the [startup results](docs/validation-1.1.8.md), [dash tests](docs/mechanics-validation-2026-11-25.md), [crafting tests](docs/crafting-validation-2026-11-24.md) and [WorldGuard tests](docs/protection-validation-2026-11-24.md).
 
-On both versions, a player recovered the Chronicle and an administrator reissued it. Both clients displayed the optional pack prompt and reported declining it. Earlier client tests showed the custom item models, including a separate modern-only ZIP on 26.3. See the [command test results](ROADMAP.md#119--experiencia-de-juego) and [pack test notes](resource-pack/CelestialDash-Resource-Pack/README.md#supported-clients).
-
-PlaceholderAPI 2.12.3 registered the `celestialdash` expansion on both servers during the November 25 startup checks. Those runs had no connected players. Live placeholder values, first-join Chronicle delivery across a reconnect, and a fresh client download that displays both items from the exact [1.1.8 release ZIP](https://github.com/Miniico/CelestialDash/releases/tag/v1.1.8) still need checking on both setups.
+With the public release, a new player received one Chronicle and kept exactly one after reconnecting. On both servers, PlaceholderAPI reported eight, seven and six Tears before and after the two dashes. The second-dash flag switched on after the first impulse and off after the second, and the cooldown returned to zero. Each vanilla client downloaded the official 1.1.8 ZIP into an empty cache and displayed both custom item models. See the inventory screenshots for [Minecraft 1.20](docs/evidence/1.1.8-inventory-1.20.png) and [Minecraft 26.3](docs/evidence/1.1.8-inventory-26.3.png).
 
 ## Roadmap
 
@@ -234,7 +234,7 @@ GitHub Actions runs the Maven tests, checks the version embedded in the JAR and 
 The editable pack source is in [`resource-pack/CelestialDash-Resource-Pack`](resource-pack/CelestialDash-Resource-Pack).
 Download the ZIP attached to your [plugin release](https://github.com/Miniico/CelestialDash/releases). It gives the Celestial Tear and Celestial Amulet their own 32×32 textures and preserves the vanilla Ghast Tear and Nautilus Shell.
 
-The pack declares resource formats 15 through 97.1, with legacy models and an overlay for modern clients. See the [pack notes](resource-pack/CelestialDash-Resource-Pack/README.md) for the client checks and their scope.
+The pack declares resource formats 15 through 97.1, with legacy models and an overlay for modern clients. See the [pack notes](resource-pack/CelestialDash-Resource-Pack/README.md) for the archive layout and [tested server compatibility](#tested-server-compatibility) for the client results with the published ZIP.
 
 ### Enable the release pack
 
