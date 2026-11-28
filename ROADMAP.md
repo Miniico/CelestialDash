@@ -1,6 +1,6 @@
 # Roadmap de CelestialDash
 
-Plan de desarrollo a partir de la versión 1.1.7. Actualizado el 2026-11-27.
+Plan de desarrollo a partir de la versión 1.1.7. Actualizado el 2026-11-28.
 
 La prioridad es consolidar las mecánicas actuales, validar su experiencia con jugadores y después ampliar la progresión. Las versiones son objetivos de planificación; no tienen fechas de entrega comprometidas.
 
@@ -63,7 +63,7 @@ Los casos de crafteo múltiple se completaron en la repetición del 2026-11-24. 
 - [x] Generar el SHA-1 a partir del ZIP publicado. Maven empaqueta las fuentes e incorpora la huella de ese ZIP al JAR. Comprobado el 2026-11-28 con la descarga pública de la 1.1.8 y con una textura modificada en una compilación incremental.
 - [x] Establecer una única fuente oficial del resource pack y documentar su relación con CelestialDashPack. El [README](README.md#optional-resource-pack) identifica las fuentes editables, la descarga de cada versión y la distribución histórica.
 - [x] Publicar la [tabla de compatibilidad probada](README.md#tested-server-compatibility) con las versiones de Minecraft, Paper y Java, las comprobaciones realizadas y las pendientes en cada entorno.
-- [ ] Comprobar arranque, dash, crafteo, crónica, PlaceholderAPI y descarga del pack en las combinaciones anunciadas. La [matriz por versión y servidor](docs/server-compatibility-1.1.8.md) recoge las pruebas de juego, los builds disponibles y las combinaciones pendientes.
+- [x] Comprobar arranque, doble dash, crafteo con Mayús, Crónica, PlaceholderAPI y descarga del pack en 24 builds de Spigot, 21 de Paper y 19 de Purpur. La [matriz por versión y servidor](docs/server-compatibility-1.1.8.md) cubre las 24 versiones anunciadas e identifica las ocho combinaciones para las que el distribuidor carece de una versión exacta.
 - [x] Publicar la [guía de instalación y actualización desde 1.1.7](docs/install-and-upgrade.md).
 - [x] Verificar la instalación limpia en ambas versiones de Paper y la actualización entre los JAR publicados en 26.3. En Paper 1.20, el ensayo con datos antiguos necesitó corregir la declaración de API en una copia de la 1.1.7. [Resultados de instalación y migración](docs/install-validation-1.1.8.md).
 
