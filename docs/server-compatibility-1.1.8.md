@@ -19,8 +19,8 @@ The protocol clients used for the matrix do not draw textures. Visual checks in 
 | --- | --- | --- | --- |
 | 1.20 | [3798](https://hub.spigotmc.org/versions/3798.json) · Pass | [17](https://fill.papermc.io/v3/projects/paper/versions/1.20/builds/17) · Visual | [1990](https://api.purpurmc.org/v2/purpur/1.20/1990) · Pass |
 | 1.20.1 | [3871](https://hub.spigotmc.org/versions/3871.json) · Pass | [196](https://fill.papermc.io/v3/projects/paper/versions/1.20.1/builds/196) · Pass | [2062](https://api.purpurmc.org/v2/purpur/1.20.1/2062) · Pass |
-| 1.20.2 | Pending | [318](https://fill.papermc.io/v3/projects/paper/versions/1.20.2/builds/318) · Pass | [2095](https://api.purpurmc.org/v2/purpur/1.20.2/2095) · Pass |
-| 1.20.3 | Pending | No build | No build |
+| 1.20.2 | [3950](https://hub.spigotmc.org/versions/3950.json) · Pass | [318](https://fill.papermc.io/v3/projects/paper/versions/1.20.2/builds/318) · Pass | [2095](https://api.purpurmc.org/v2/purpur/1.20.2/2095) · Pass |
+| 1.20.3 | [3961](https://hub.spigotmc.org/versions/3961.json) · Pass | No build | No build |
 | 1.20.4 | Pending | [499](https://fill.papermc.io/v3/projects/paper/versions/1.20.4/builds/499) · Pass | [2176](https://api.purpurmc.org/v2/purpur/1.20.4/2176) · Pass |
 | 1.20.5 | Pending | [22](https://fill.papermc.io/v3/projects/paper/versions/1.20.5/builds/22) · Pass | No build |
 | 1.20.6 | Pending | [151](https://fill.papermc.io/v3/projects/paper/versions/1.20.6/builds/151) · Pass | [2233](https://api.purpurmc.org/v2/purpur/1.20.6/2233) · Pass |
@@ -35,12 +35,12 @@ The protocol clients used for the matrix do not draw textures. Visual checks in 
 | 1.21.8 | Pending | [60](https://fill.papermc.io/v3/projects/paper/versions/1.21.8/builds/60) · Pass | [2497](https://api.purpurmc.org/v2/purpur/1.21.8/2497) · Pass |
 | 1.21.9 | Pending | [59](https://fill.papermc.io/v3/projects/paper/versions/1.21.9/builds/59) · Pass | [2505](https://api.purpurmc.org/v2/purpur/1.21.9/2505) · Pass |
 | 1.21.10 | Pending | [130](https://fill.papermc.io/v3/projects/paper/versions/1.21.10/builds/130) · Pass | [2535](https://api.purpurmc.org/v2/purpur/1.21.10/2535) · Pass |
-| 1.21.11 | Pending | [132](https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds/132) · Pass | [2568](https://api.purpurmc.org/v2/purpur/1.21.11/2568) · Startup |
+| 1.21.11 | Pending | [132](https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds/132) · Pass | [2568](https://api.purpurmc.org/v2/purpur/1.21.11/2568) · Pass |
 | 26.1 | Pending | No build | No build |
 | 26.1.1 | Pending | [29](https://fill.papermc.io/v3/projects/paper/versions/26.1.1/builds/29) · Pass | No build |
-| 26.1.2 | Pending | [74](https://fill.papermc.io/v3/projects/paper/versions/26.1.2/builds/74) · Pass | [2592](https://api.purpurmc.org/v2/purpur/26.1.2/2592) · Startup |
-| 26.2 | Pending | [135](https://fill.papermc.io/v3/projects/paper/versions/26.2/builds/135) · Pass | Pending |
-| 26.3 | Pending | [194](https://fill.papermc.io/v3/projects/paper/versions/26.3/builds/194) · Visual | [2661](https://api.purpurmc.org/v2/purpur/26.3/2661) · Pass |
+| 26.1.2 | Pending | [74](https://fill.papermc.io/v3/projects/paper/versions/26.1.2/builds/74) · Pass | [2592](https://api.purpurmc.org/v2/purpur/26.1.2/2592) · Pass |
+| 26.2 | Pending | [135](https://fill.papermc.io/v3/projects/paper/versions/26.2/builds/135) · Pass | [2633](https://api.purpurmc.org/v2/purpur/26.2/2633) · Pass |
+| 26.3 | [4665](https://hub.spigotmc.org/versions/4665.json) · Pass | [194](https://fill.papermc.io/v3/projects/paper/versions/26.3/builds/194) · Visual | [2661](https://api.purpurmc.org/v2/purpur/26.3/2661) · Pass |
 
 The linked build numbers identify the server binaries used. Java 17 was used through Minecraft 1.20.4, Java 21 for gameplay from 1.20.5 through 1.21.11, and Java 25 for 26.x. Additional startup runs on Paper 1.20.6 and 1.21.11 used Java 25.
 
