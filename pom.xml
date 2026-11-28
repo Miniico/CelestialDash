@@ -19,6 +19,7 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <pack.python>python3</pack.python>
     </properties>
 
     <dependencyManagement>
@@ -108,6 +109,10 @@
         <defaultGoal>clean package</defaultGoal>
         <finalName>${project.artifactId}-${project.version}</finalName>
 
+        <filters>
+            <filter>${project.build.directory}/CelestialDash-Resource-Pack-${project.version}.properties</filter>
+        </filters>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -120,6 +125,26 @@
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>package-resource-pack</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>exec</goal></goals>
+                        <configuration>
+                            <executable>${pack.python}</executable>
+                            <arguments>
+                                <argument>${project.basedir}/scripts/package_resource_pack.py</argument>
+                                <argument>${project.build.directory}/CelestialDash-Resource-Pack-${project.version}.zip</argument>
+                                <argument>--maven-filter</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

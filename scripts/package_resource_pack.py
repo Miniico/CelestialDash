@@ -292,9 +292,13 @@ def package(output, source=SOURCE):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path, help="destination ZIP (outside the unpacked source)")
+    parser.add_argument("--maven-filter", action="store_true",
+                        help="also write a .properties file beside the ZIP for Maven resource filtering")
     args = parser.parse_args()
     try:
         count, sha1 = package(args.output)
+        if args.maven_filter:
+            args.output.with_suffix(".properties").write_text(f"resource.pack.sha1={sha1}\n", encoding="ascii")
     except (InvalidPack, OSError, zipfile.BadZipFile) as error:
         print(f"Resource pack packaging failed: {error}", file=sys.stderr)
         return 1
