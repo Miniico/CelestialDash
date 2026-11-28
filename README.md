@@ -22,7 +22,7 @@ Both servers started with the plugins enabled. Players used both dash impulses, 
 
 On both versions, a player recovered the Chronicle and an administrator reissued it. Both clients displayed the optional pack prompt and reported declining it. Earlier client tests showed the custom item models, including a separate modern-only ZIP on 26.3. See the [command test results](ROADMAP.md#119--experiencia-de-juego) and [pack test notes](resource-pack/CelestialDash-Resource-Pack/README.md#supported-clients).
 
-Still to verify on both setups: first-join Chronicle delivery across a reconnect, live PlaceholderAPI values and a fresh client download that displays both items using the exact [1.1.8 release ZIP](https://github.com/Miniico/CelestialDash/releases/tag/v1.1.8).
+PlaceholderAPI 2.12.3 registered the `celestialdash` expansion on both servers during the November 25 startup checks. Those runs had no connected players. Live placeholder values, first-join Chronicle delivery across a reconnect, and a fresh client download that displays both items from the exact [1.1.8 release ZIP](https://github.com/Miniico/CelestialDash/releases/tag/v1.1.8) still need checking on both setups.
 
 ## Roadmap
 
